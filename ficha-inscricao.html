@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ficha de Inscrição — Tríade Conexão</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --azul:      #1e3a8a;
+    --azul-med:  #2563eb;
+    --azul-clr:  #dbeafe;
+    --laranja:   #f97316;
+    --preto:     #0f172a;
+    --cinza-esc: #334155;
+    --cinza:     #64748b;
+    --cinza-clr: #e2e8f0;
+    --branco:    #ffffff;
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    background: linear-gradient(135deg, #c7d2fe 0%, #dbeafe 100%);
+    padding: 20px 10px 40px;
+    color: var(--preto);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .toolbar {
+    max-width: 210mm;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font: inherit; font-size: 13px; font-weight: 700;
+    color: #fff;
+    border: 0; border-radius: 999px;
+    padding: 10px 20px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: transform .15s, box-shadow .18s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn--salvar   { background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+  .btn--imprimir { background: linear-gradient(135deg, #6d28d9, #8b5cf6); box-shadow: 0 4px 12px rgba(109,40,217,.3); }
+  .btn--cancelar { background: #fff; color: #475569; box-shadow: 0 3px 10px rgba(15,23,42,.1); }
+  .btn--cancelar:hover { background: #f1f5f9; }
+  .btn:disabled { opacity: .6; cursor: wait; }
+
+  .toolbar__titulo {
+    flex: 1 1 260px;
+    font-size: 13px;
+    color: #5b21b6;
+    font-weight: 600;
+  }
+  .toolbar__titulo strong { color: #be123c; }
+
+  .folha {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 12px 32px rgba(30,58,138,.2);
+    padding: 8mm 10mm;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5mm;
+  }
+
+  .cabecalho {
+    border: 2px solid var(--azul-med);
+    border-radius: 6px;
+    padding: 3mm 5mm;
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .cabecalho::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; background: linear-gradient(90deg, #6d28d9, #3b82f6, #10b981);
+  }
+  .cabecalho::after {
+    content: ""; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; background: linear-gradient(90deg, #f43f5e, #f97316, #facc15);
+  }
+  .cabecalho__titulo {
+    font-size: 15pt; font-weight: 900; color: var(--azul);
+    letter-spacing: .02em; text-transform: uppercase; line-height: 1.1;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .cabecalho__subtitulo {
+    font-size: 10pt; font-weight: 800; color: var(--laranja);
+    letter-spacing: .1em; text-transform: uppercase; margin-top: 1mm;
+  }
+  .cabecalho__contatos {
+    display: flex; justify-content: center; align-items: center;
+    gap: 6mm; margin-top: 2mm;
+    font-size: 8pt; font-weight: 600; color: var(--preto); flex-wrap: wrap;
+  }
+  .cabecalho__contatos .item { display: inline-flex; align-items: center; gap: 4px; }
+  .cabecalho__contatos svg { color: var(--azul-med); flex-shrink: 0; }
+
+  .titulo-ficha {
+    align-self: center;
+    padding: 1.6mm 12mm;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+    color: #fff;
+    font-size: 11pt; font-weight: 900;
+    letter-spacing: .16em; text-transform: uppercase;
+    box-shadow: 0 3px 10px rgba(30,58,138,.25);
+    margin: 1mm 0;
+  }
+
+  .barra {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.6mm 3mm;
+    background: var(--azul-clr);
+    border: 1px solid #bfdbfe;
+    border-radius: 4px;
+    font-size: 9pt; font-weight: 700; color: var(--azul);
+  }
+  .barra .campo { display: inline-flex; align-items: center; gap: 4px; }
+  .barra input {
+    border: 0; border-bottom: 1.2px dotted var(--cinza);
+    background: transparent; font: inherit; font-weight: 800;
+    color: var(--preto); text-align: center;
+    padding: 0 3px; min-width: 26mm; height: 15px;
+    outline: none;
+  }
+  .barra input:focus { border-bottom-color: var(--azul-med); }
+  .barra input[readonly] { color: var(--cinza-esc); }
+
+  .secao {
+    border: 1px solid var(--cinza-clr);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .secao__titulo {
+    background: linear-gradient(135deg, var(--azul-med), var(--azul));
+    color: #fff;
+    padding: 1.4mm 3mm;
+    font-size: 9.5pt; font-weight: 800;
+    letter-spacing: .03em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .secao__titulo .num {
+    display: grid; place-items: center;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; color: var(--azul);
+    font-size: 10px; font-weight: 900; flex-shrink: 0;
+  }
+  .secao__corpo {
+    padding: 2mm 3mm;
+    display: flex; flex-direction: column; gap: 1.6mm;
+  }
+
+  .linha { display: flex; align-items: flex-end; gap: 4mm; flex-wrap: nowrap; }
+  .linha.wrap { flex-wrap: wrap; }
+
+  .campo {
+    display: flex; align-items: flex-end; gap: 4px;
+    min-width: 0; flex: 1;
+  }
+  .campo.f0 { flex: 0 0 auto; }
+  .campo.f2 { flex: 2; }
+
+  .campo > label {
+    font-size: 8pt; font-weight: 700; color: var(--preto);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .campo > input,
+  .campo > select {
+    flex: 1; min-width: 40px; height: 15px;
+    border: 0; border-bottom: 1.2px dotted var(--cinza);
+    background: transparent; font: inherit; font-weight: 700;
+    font-size: 8.5pt; color: var(--preto);
+    padding: 0 2px; outline: none;
+    text-transform: uppercase;
+  }
+  .campo > input:focus,
+  .campo > select:focus { border-bottom-color: var(--azul-med); }
+  .campo > input.curto { min-width: 22px; max-width: 30px; text-align: center; }
+  .campo > input.medio { min-width: 45px; max-width: 60px; }
+
+  .bloco { display: flex; flex-direction: column; gap: 1px; width: 100%; }
+  .bloco > label { font-size: 8pt; font-weight: 700; color: var(--preto); }
+  .bloco > input {
+    height: 15px; border: 0; border-bottom: 1.2px dotted var(--cinza);
+    background: transparent; font: inherit; font-weight: 700;
+    font-size: 8.5pt; color: var(--preto);
+    padding: 0 2px; outline: none;
+    text-transform: uppercase;
+  }
+  .bloco > input:focus { border-bottom-color: var(--azul-med); }
+
+  .check {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 8pt; font-weight: 600; color: var(--preto);
+    white-space: nowrap; cursor: pointer;
+  }
+  .check input[type="checkbox"],
+  .check input[type="radio"] {
+    appearance: none; -webkit-appearance: none;
+    width: 11px; height: 11px;
+    border: 1.3px solid var(--preto); border-radius: 2px;
+    background: #fff; flex-shrink: 0; position: relative;
+    cursor: pointer; margin: 0;
+  }
+  .check input[type="radio"] { border-radius: 50%; }
+  .check input:checked::after {
+    content: ""; position: absolute; inset: 1px;
+    background: var(--azul-med); border-radius: 1px;
+  }
+  .check input[type="radio"]:checked::after { border-radius: 50%; }
+
+  .checks { display: flex; flex-wrap: wrap; gap: 3mm 5mm; align-items: center; }
+
+  .tabela { width: 100%; border-collapse: collapse; font-size: 8pt; border-radius: 4px; overflow: hidden; }
+  .tabela thead th {
+    background: linear-gradient(135deg, var(--azul-med), var(--azul));
+    color: #fff; font-size: 8pt; font-weight: 800;
+    text-align: left; padding: 1.4mm 2.5mm;
+    text-transform: uppercase; letter-spacing: .03em;
+  }
+  .tabela tbody td {
+    padding: 0 2.5mm; border-bottom: 1px solid var(--cinza-clr);
+    height: 6.5mm; font-weight: 600; vertical-align: middle;
+  }
+  .tabela tbody tr:nth-child(even) { background: #f8fafc; }
+  .tabela input {
+    width: 100%; height: 100%;
+    border: 0; background: transparent;
+    font: inherit; font-weight: 600; padding: 0;
+    outline: none; text-transform: uppercase;
+  }
+  .tabela input:focus { border-bottom: 1.2px dotted var(--azul-med); }
+
+  .aviso {
+    padding: 1.4mm 2.5mm;
+    border-left: 3px solid #ca8a04;
+    background: #fef9c3;
+    color: #78350f;
+    font-size: 7.5pt; font-weight: 600; border-radius: 3px;
+  }
+
+  .termo {
+    padding: 1.8mm 3mm;
+    border: 1px solid var(--cinza-clr);
+    border-left: 3px solid var(--azul-med);
+    border-radius: 4px;
+    background: #eff6ff;
+    font-size: 7.5pt; line-height: 1.4; color: var(--cinza-esc);
+  }
+  .termo strong { color: var(--azul); font-weight: 800; }
+
+  .assinatura {
+    margin-top: auto;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2mm; padding-top: 4mm;
+  }
+  .assinatura__local {
+    display: flex; align-items: flex-end; gap: 5px;
+    font-size: 9pt; font-weight: 600; color: var(--preto);
+    flex-wrap: wrap; justify-content: center;
+  }
+  .assinatura__local input {
+    border: 0; border-bottom: 1.2px dotted var(--cinza);
+    background: transparent; font: inherit; font-weight: 700;
+    text-align: center; padding: 0 3px;
+    min-width: 22mm; height: 15px; outline: none;
+  }
+  .assinatura__local input.largo { min-width: 40mm; }
+  .assinatura__local input:focus { border-bottom-color: var(--azul-med); }
+
+  .assinatura__linha { width: 90mm; height: 1px; background: var(--preto); margin-top: 4mm; }
+  .assinatura__nome {
+    font-size: 9pt; font-weight: 800;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--preto);
+  }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 14px 20px; border-radius: 10px;
+    background: #16a34a; color: #fff;
+    font-weight: 700; font-size: 14px;
+    box-shadow: 0 12px 28px rgba(0,0,0,.2);
+    z-index: 9999;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity .3s, transform .3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: none; }
+  .toast.erro { background: #dc2626; }
+
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(255,255,255,.7);
+    display: none; align-items: center; justify-content: center; z-index: 9998;
+    font-weight: 600; color: var(--azul);
+  }
+  .loading-overlay.show { display: flex; }
+
+  @media print {
+    @page { size: A4; margin: 0; }
+    html, body { background: #fff; padding: 0; margin: 0; }
+    .no-print { display: none !important; }
+    .loading-overlay { display: none !important; }
+    .folha {
+      width: 210mm; height: 297mm; margin: 0;
+      padding: 8mm 10mm; border-radius: 0; box-shadow: none;
+    }
+    input, select, textarea { caret-color: transparent; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div class="toolbar no-print">
+  <button class="btn btn--salvar" id="btnSalvar" onclick="salvarFicha()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/>
+      <polyline points="7 3 7 8 15 8"/>
+    </svg>
+    Salvar inscrição
+  </button>
+  <button class="btn btn--imprimir" onclick="window.print()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 6 2 18 2 18 9"/>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
+    </svg>
+    Imprimir ficha
+  </button>
+  <button class="btn btn--cancelar" onclick="voltarAdmin()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/>
+      <polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Voltar
+  </button>
+  <p class="toolbar__titulo" id="tituloModo">Nova inscrição · preencha os campos e clique em <strong>Salvar</strong></p>
+</div>
+
+<!-- Folha -->
+<div class="folha">
+
+  <!-- Cabeçalho -->
+  <header class="cabecalho">
+    <div class="cabecalho__titulo">
+      <svg width="22" height="22" viewBox="0 0 100 90" fill="none">
+        <defs>
+          <linearGradient id="gRoxo" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#6d28d9"/></linearGradient>
+          <linearGradient id="gRosa" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#e11d48"/></linearGradient>
+          <linearGradient id="gVerde" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#059669"/></linearGradient>
+          <linearGradient id="gLinha" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ec4899"/><stop offset="50%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient>
+        </defs>
+        <path d="M50 12 L82 68 L18 68 Z" stroke="url(#gLinha)" stroke-width="4" stroke-linejoin="round" fill="none"/>
+        <circle cx="50" cy="12" r="7.5" fill="url(#gRoxo)"/>
+        <circle cx="18" cy="68" r="7.5" fill="url(#gRosa)"/>
+        <circle cx="82" cy="68" r="7.5" fill="url(#gVerde)"/>
+        <path d="M44 41 L50 36 L56 41 L50 45 Z" fill="#7c3aed"/>
+      </svg>
+      BANCA DE ESTUDO &amp; REFORÇO ESCOLAR
+    </div>
+    <div class="cabecalho__subtitulo">Tríade Conexão</div>
+    <div class="cabecalho__contatos">
+      <span class="item">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        WhatsApp: (79) 98816-0217
+      </span>
+      <span class="item">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+        Instagram: conexao.triade
+      </span>
+      <span class="item">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Rua 16, Nº 365 — Bairro Conjunto Fernando Collor
+      </span>
+    </div>
+  </header>
+
+  <div class="titulo-ficha">Ficha de Inscrição</div>
+
+  <div class="barra">
+    <span class="campo">Data da Inscrição: <input type="text" id="f_data" /></span>
+    <span class="campo">Matrícula Nº: <input type="text" id="f_numero" readonly /></span>
+  </div>
+
+  <!-- 1. Dados do Aluno -->
+  <section class="secao">
+    <div class="secao__titulo"><span class="num">1</span> Dados do Aluno(a)</div>
+    <div class="secao__corpo">
+      <div class="bloco">
+        <label>Nome Completo:</label>
+        <input id="f_nome" />
+      </div>
+      <div class="linha">
+        <div class="campo f2">
+          <label>Data de Nascimento:</label>
+          <input class="curto" id="f_dia" maxlength="2" />
+          <label>/</label>
+          <input class="curto" id="f_mes" maxlength="2" />
+          <label>/</label>
+          <input class="medio" id="f_ano" maxlength="4" />
+        </div>
+        <div class="campo f0">
+          <label>Idade:</label>
+          <input class="curto" id="f_idade" maxlength="2" />
+          <label>anos</label>
+        </div>
+        <div class="campo f0">
+          <label>Turno Escolar:</label>
+          <div class="checks">
+            <label class="check"><input type="checkbox" name="f_turno_escolar" value="Manhã" /> Manhã</label>
+            <label class="check"><input type="checkbox" name="f_turno_escolar" value="Tarde" /> Tarde</label>
+          </div>
+        </div>
+      </div>
+      <div class="linha">
+        <div class="campo"><label>Escola onde estuda:</label><input id="f_escola" /></div>
+      </div>
+      <div class="linha">
+        <div class="campo"><label>Série / Ano:</label><input id="f_serie" /></div>
+      </div>
+      <div class="linha wrap">
+        <label style="font-size:8pt;font-weight:700;color:var(--preto);white-space:nowrap;">Nível Escolar:</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="f_nivel" value="Anos Iniciais" /> Anos Iniciais (1º ao 5º ano)</label>
+          <label class="check"><input type="checkbox" name="f_nivel" value="Anos Finais" /> Anos Finais (6º ao 9º ano)</label>
+          <label class="check"><input type="checkbox" name="f_nivel" value="Ensino Médio" /> Ensino Médio</label>
+        </div>
+      </div>
+      <div class="linha wrap">
+        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Possui alguma alergia, condição médica ou necessidade específica?</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="f_alergia" value="Não" /> Não</label>
+          <label class="check"><input type="checkbox" name="f_alergia" value="Sim" /> Sim. Qual?</label>
+          <input id="f_alergia_desc" style="flex:1;min-width:80px;height:15px;border:0;border-bottom:1.2px dotted var(--cinza);background:transparent;font:inherit;font-weight:600;font-size:8pt;padding:0 2px;outline:none;text-transform:uppercase;" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Responsável -->
+  <section class="secao">
+    <div class="secao__titulo"><span class="num">2</span> Dados do Responsável Legal</div>
+    <div class="secao__corpo">
+      <div class="bloco">
+        <label>Nome do Responsável:</label>
+        <input id="f_responsavel" />
+      </div>
+      <div class="linha wrap">
+        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Grau de Parentesco:</label>
+        <div class="checks">
+          <label class="check"><input type="radio" name="f_parentesco" value="Mãe" /> Mãe</label>
+          <label class="check"><input type="radio" name="f_parentesco" value="Pai" /> Pai</label>
+          <label class="check"><input type="radio" name="f_parentesco" value="Avô / Avó" /> Avô / Avó</label>
+          <label class="check"><input type="radio" name="f_parentesco" value="Outro" /> Outro</label>
+        </div>
+      </div>
+      <div class="linha">
+        <div class="campo"><label>CPF:</label><input id="f_cpf" /></div>
+        <div class="campo"><label>RG:</label><input id="f_rg" /></div>
+      </div>
+      <div class="linha">
+        <div class="campo">
+          <label>WhatsApp Principal:</label><label>(79)</label>
+          <input id="f_whatsapp" />
+        </div>
+        <div class="campo">
+          <label>Contato Emergência:</label><label>(79)</label>
+          <input id="f_emergencia" />
+        </div>
+      </div>
+      <div class="bloco">
+        <label>Endereço Residencial:</label>
+        <input id="f_endereco" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Plano e Modalidade -->
+  <section class="secao">
+    <div class="secao__titulo"><span class="num">3</span> Plano e Modalidade no Reforço Escolar</div>
+    <div class="secao__corpo">
+      <div class="linha wrap">
+        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Turno no Reforço:</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="f_turno_reforco" value="Manhã" /> Manhã</label>
+          <label class="check"><input type="checkbox" name="f_turno_reforco" value="Tarde" /> Tarde</label>
+          <label class="check"><input type="checkbox" name="f_turno_reforco" value="Noite (especial)" /> Noite (casos extremos)</label>
+        </div>
+      </div>
+      <div class="linha wrap">
+        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Dias da Semana:</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="f_dias" value="Segunda" /> Segunda</label>
+          <label class="check"><input type="checkbox" name="f_dias" value="Terça" /> Terça</label>
+          <label class="check"><input type="checkbox" name="f_dias" value="Quarta" /> Quarta</label>
+          <label class="check"><input type="checkbox" name="f_dias" value="Quinta" /> Quinta</label>
+          <label class="check"><input type="checkbox" name="f_dias" value="Sexta" /> Sexta</label>
+        </div>
+      </div>
+      <div class="linha wrap">
+        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Serviços Contratados:</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="f_servicos" value="Tarefas de Casa" /> Acompanhamento de Tarefas de Casa</label>
+          <label class="check"><input type="checkbox" name="f_servicos" value="Alfabetização" /> Alfabetização / Letramento</label>
+          <label class="check"><input type="checkbox" name="f_servicos" value="Reforço Específico" /> Reforço Específico (Português, Matemática, etc.)</label>
+          <label class="check"><input type="checkbox" name="f_servicos" value="Preparatório" /> Preparatório para Provas</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Tabela de Valores -->
+  <section class="secao">
+    <div class="secao__titulo"><span class="num">4</span> Tabela de Valores e Condições de Pagamento</div>
+    <div class="secao__corpo">
+      <table class="tabela">
+        <thead>
+          <tr><th>Categoria / Nível Escolar</th><th>Frequência</th><th>Mensalidade</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input id="f_cat1" /></td>
+            <td><input id="f_freq1" /></td>
+            <td><input id="f_val1" /></td>
+          </tr>
+          <tr>
+            <td><input id="f_cat2" /></td>
+            <td><input id="f_freq2" /></td>
+            <td><input id="f_val2" /></td>
+          </tr>
+          <tr>
+            <td><input id="f_cat3" /></td>
+            <td><input id="f_freq3" /></td>
+            <td><input id="f_val3" /></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="aviso"><strong>Desconto Irmãos:</strong> 10% de desconto na mensalidade do segundo filho.</div>
+      <div class="linha">
+        <div class="campo">
+          <label>Dia de Vencimento:</label>
+          <input class="medio" id="f_vencimento" maxlength="2" />
+          <label>de cada mês.</label>
+        </div>
+        <div class="campo f0">
+          <label>Forma de Pagamento:</label>
+          <div class="checks">
+            <label class="check"><input type="checkbox" name="f_forma" value="PIX" /> PIX</label>
+            <label class="check"><input type="checkbox" name="f_forma" value="Dinheiro" /> Dinheiro</label>
+            <label class="check"><input type="checkbox" name="f_forma" value="Cartão" /> Cartão</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Autorizações -->
+  <section class="secao">
+    <div class="secao__titulo"><span class="num">5</span> Autorizações e Termos</div>
+    <div class="secao__corpo">
+      <div class="bloco">
+        <label>Pessoas autorizadas a buscar o aluno além do responsável:</label>
+      </div>
+      <div class="linha">
+        <div class="campo"><label>1. Nome:</label><input id="f_aut1" /></div>
+        <div class="campo f0"><label>Parentesco:</label><input class="medio" id="f_aut1_parentesco" /></div>
+      </div>
+      <div class="linha">
+        <div class="campo"><label>2. Nome:</label><input id="f_aut2" /></div>
+        <div class="campo f0"><label>Parentesco:</label><input class="medio" id="f_aut2_parentesco" /></div>
+      </div>
+      <div class="linha wrap">
+        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Uso de Imagem:</label>
+        <div class="checks">
+          <span style="font-size:8pt;font-weight:600;">Autorizo o uso de fotos/vídeos em atividades pedagógicas para divulgação?</span>
+          <label class="check"><input type="radio" name="f_imagem" value="SIM" /> SIM</label>
+          <label class="check"><input type="radio" name="f_imagem" value="NÃO" /> NÃO</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Declaração -->
+  <section class="secao">
+    <div class="secao__titulo"><span class="num">6</span> Declaração e Assinaturas</div>
+    <div class="secao__corpo">
+      <div class="termo">
+        Declaro que as informações acima são verdadeiras e estou de acordo com os valores, prazos e termos estabelecidos.
+      </div>
+    </div>
+  </section>
+
+  <!-- Assinatura -->
+  <div class="assinatura">
+    <div class="assinatura__local">
+      <span>Nossa Senhora do Socorro / SE,</span>
+      <input id="f_assin_dia" maxlength="2" />
+      <span>de</span>
+      <input id="f_assin_mes" class="largo" />
+      <span>de 2026.</span>
+    </div>
+    <div class="assinatura__linha"></div>
+    <div class="assinatura__nome">Assinatura do Responsável Legal</div>
+  </div>
+
+</div>
+
+<!-- Toast + Loading -->
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loading">Carregando...</div>
+
+<script src="db.js"></script>
+<script>
+/* ============================================================
+   FICHA DE INSCRIÇÃO — Supabase
+   Modos:
+   - sem parâmetro  → nova inscrição (público, RLS permite INSERT)
+   - com ?id=xxx    → editar inscrição existente
+   ============================================================ */
+
+let inscricaoAtual = null;
+
+function $(id) { return document.getElementById(id); }
+
+function getQuery(k) { return new URLSearchParams(location.search).get(k); }
+
+function toast(msg, erro = false) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (erro ? ' erro' : '');
+  setTimeout(() => t.className = 'toast', 2400);
+}
+
+function showLoading(show) {
+  $('loading').classList.toggle('show', show);
+}
+
+function fmtDataBR(iso) {
+  if (!iso) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth() + 1).padStart(2,'0');
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+/* ---------- Número sequencial ---------- */
+function gerarNumero() {
+  const lista = DB.list('inscricoes');
+  if (!lista.length) return '0001';
+  const ultimo = lista
+    .map(i => parseInt(String(i.numero || '0').replace(/\D/g, ''), 10) || 0)
+    .sort((a, b) => b - a)[0];
+  return String(ultimo + 1).padStart(4, '0');
+}
+
+/* ---------- Coleta de checkboxes ---------- */
+function valoresCheckboxes(name) {
+  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+    .map(cb => cb.value);
+}
+
+function marcarCheckboxes(name, valores) {
+  const arr = Array.isArray(valores) ? valores : [];
+  document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
+    cb.checked = arr.includes(cb.value);
+  });
+}
+
+/* ---------- Coleta dados do formulário ---------- */
+function coletarDados() {
+  const dia = $('f_dia').value.trim().padStart(2, '0');
+  const mes = $('f_mes').value.trim().padStart(2, '0');
+  const ano = $('f_ano').value.trim();
+  const nascimento = (ano && mes && dia) ? `${ano}-${mes}-${dia}` : null;
+
+  return {
+    numero: $('f_numero').value.trim(),
+    dataInscricao: hojeISO(),
+    dataInscricaoTexto: $('f_data').value.trim(),
+    nome: $('f_nome').value.trim(),
+    nascimento,
+    idade: $('f_idade').value.trim(),
+    escola: $('f_escola').value.trim(),
+    serie: $('f_serie').value.trim(),
+    turnoEscolar: valoresCheckboxes('f_turno_escolar'),
+    nivel: valoresCheckboxes('f_nivel'),
+    alergia: valoresCheckboxes('f_alergia'),
+    alergiaDesc: $('f_alergia_desc').value.trim(),
+    responsavel: $('f_responsavel').value.trim(),
+    parentesco: valoresCheckboxes('f_parentesco')[0] || '',
+    cpf: $('f_cpf').value.trim(),
+    rg: $('f_rg').value.trim(),
+    whatsapp: $('f_whatsapp').value.trim(),
+    emergencia: $('f_emergencia').value.trim(),
+    endereco: $('f_endereco').value.trim(),
+    turnoReforco: valoresCheckboxes('f_turno_reforco'),
+    dias: valoresCheckboxes('f_dias'),
+    servicos: valoresCheckboxes('f_servicos'),
+    tabela: [
+      { categoria: $('f_cat1').value.trim(), frequencia: $('f_freq1').value.trim(), mensalidade: $('f_val1').value.trim() },
+      { categoria: $('f_cat2').value.trim(), frequencia: $('f_freq2').value.trim(), mensalidade: $('f_val2').value.trim() },
+      { categoria: $('f_cat3').value.trim(), frequencia: $('f_freq3').value.trim(), mensalidade: $('f_val3').value.trim() }
+    ],
+    vencimento: $('f_vencimento').value.trim(),
+    forma: valoresCheckboxes('f_forma'),
+    aut1: $('f_aut1').value.trim(),
+    aut1Parentesco: $('f_aut1_parentesco').value.trim(),
+    aut2: $('f_aut2').value.trim(),
+    aut2Parentesco: $('f_aut2_parentesco').value.trim(),
+    imagem: document.querySelector('input[name="f_imagem"]:checked')?.value || '',
+    assinDia: $('f_assin_dia').value.trim(),
+    assinMes: $('f_assin_mes').value.trim(),
+    status: inscricaoAtual?.status || 'Pendente'
+  };
+}
+
+/* ---------- Preenche formulário ---------- */
+function preencherFormulario(d) {
+  $('f_numero').value = d.numero || '';
+  $('f_data').value = d.dataInscricaoTexto || fmtDataBR(d.dataInscricao);
+  $('f_nome').value = d.nome || '';
+
+  if (d.nascimento) {
+    const [y, m, dia] = String(d.nascimento).split('-');
+    $('f_ano').value = y || '';
+    $('f_mes').value = m || '';
+    $('f_dia').value = dia || '';
+  }
+  $('f_idade').value = d.idade || '';
+  $('f_escola').value = d.escola || '';
+  $('f_serie').value = d.serie || '';
+  $('f_responsavel').value = d.responsavel || '';
+  $('f_cpf').value = d.cpf || '';
+  $('f_rg').value = d.rg || '';
+  $('f_whatsapp').value = d.whatsapp || '';
+  $('f_emergencia').value = d.emergencia || '';
+  $('f_endereco').value = d.endereco || '';
+  $('f_alergia_desc').value = d.alergiaDesc || '';
+
+  marcarCheckboxes('f_turno_escolar', d.turnoEscolar);
+  marcarCheckboxes('f_nivel', d.nivel);
+  marcarCheckboxes('f_alergia', d.alergia);
+  marcarCheckboxes('f_parentesco', d.parentesco ? [d.parentesco] : []);
+  marcarCheckboxes('f_turno_reforco', d.turnoReforco);
+  marcarCheckboxes('f_dias', d.dias);
+  marcarCheckboxes('f_servicos', d.servicos);
+  marcarCheckboxes('f_forma', d.forma);
+
+  const t = d.tabela || [];
+  for (let i = 0; i < 3; i++) {
+    const item = t[i] || {};
+    $(`f_cat${i+1}`).value  = item.categoria || '';
+    $(`f_freq${i+1}`).value = item.frequencia || '';
+    $(`f_val${i+1}`).value  = item.mensalidade || '';
+  }
+
+  $('f_vencimento').value = d.vencimento || '';
+  $('f_aut1').value = d.aut1 || '';
+  $('f_aut1_parentesco').value = d.aut1Parentesco || '';
+  $('f_aut2').value = d.aut2 || '';
+  $('f_aut2_parentesco').value = d.aut2Parentesco || '';
+  $('f_assin_dia').value = d.assinDia || '';
+  $('f_assin_mes').value = d.assinMes || '';
+
+  const img = document.querySelector(`input[name="f_imagem"][value="${d.imagem || ''}"]`);
+  if (img) img.checked = true;
+}
+
+/* ---------- Salvar ---------- */
+async function salvarFicha() {
+  const dados = coletarDados();
+
+  if (!dados.nome) {
+    toast('Informe o nome do aluno.', true);
+    $('f_nome').focus();
+    return;
+  }
+
+  $('btnSalvar').disabled = true;
+  showLoading(true);
+
+  try {
+    if (inscricaoAtual && inscricaoAtual.id) {
+      await DB.update('inscricoes', inscricaoAtual.id, dados);
+      toast('Inscrição atualizada.');
+      inscricaoAtual = { ...inscricaoAtual, ...dados };
+    } else {
+      const novo = await DB.create('inscricoes', dados);
+      inscricaoAtual = novo;
+      $('f_numero').value = novo.numero;
+      toast('Inscrição salva.');
+      history.replaceState(null, '', `?id=${novo.id}`);
+    }
+
+    await DB.refresh('inscricoes');
+
+    // Redireciona se abriu pelo admin
+    const fromAdmin = document.referrer && document.referrer.includes('admin.html');
+    if (fromAdmin) {
+      setTimeout(() => { window.location.href = 'admin.html'; }, 900);
+    } else {
+      $('btnSalvar').disabled = false;
+      showLoading(false);
+    }
+  } catch (err) {
+    console.error(err);
+    toast('Erro ao salvar inscrição.', true);
+    $('btnSalvar').disabled = false;
+    showLoading(false);
+  }
+}
+
+/* ---------- Voltar ---------- */
+function voltarAdmin() {
+  const temDados = ['f_nome','f_responsavel','f_serie'].some(id => $(id).value.trim());
+  if (temDados && !confirm('Descartar alterações não salvas?')) return;
+  window.location.href = 'admin.html';
+}
+
+/* ---------- Boot ---------- */
+(async () => {
+  const id = getQuery('id');
+
+  try {
+    await DB.sync();
+
+    if (id) {
+      const existente = DB.get('inscricoes', id);
+      if (existente) {
+        inscricaoAtual = existente;
+        preencherFormulario(existente);
+        $('tituloModo').innerHTML = 'Editando inscrição · Nº ' + (existente.numero || '—');
+      } else {
+        toast('Inscrição não encontrada.', true);
+      }
+    } else {
+      $('f_numero').value = gerarNumero();
+      $('f_data').value = fmtDataBR(hojeISO());
+      $('tituloModo').innerHTML = 'Nova inscrição · preencha os campos e clique em <strong>Salvar</strong>';
+    }
+  } catch (err) {
+    console.error(err);
+    toast('Erro ao carregar dados.', true);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.preventDefault();
+  });
+})();
+</script>
+
+</body>
+</html>
