@@ -20,7 +20,6 @@
     --cinza-esc: #334155;
     --cinza:     #64748b;
     --cinza-clr: #e2e8f0;
-    --branco:    #ffffff;
   }
 
   html { -webkit-text-size-adjust: 100%; }
@@ -28,7 +27,7 @@
   body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
     background: linear-gradient(135deg, #c7d2fe 0%, #dbeafe 100%);
-    padding: 20px 10px 40px;
+    padding: 16px 10px 30px;
     color: var(--preto);
     -webkit-font-smoothing: antialiased;
   }
@@ -36,47 +35,47 @@
   /* ===== Toolbar ===== */
   .toolbar {
     max-width: 210mm;
-    margin: 0 auto 12px;
+    margin: 0 auto 10px;
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
   }
   .btn {
-    font: inherit; font-size: 12.5px; font-weight: 700;
+    font: inherit; font-size: 12px; font-weight: 700;
     color: #fff;
     border: 0; border-radius: 999px;
-    padding: 9px 18px; cursor: pointer;
+    padding: 8px 16px; cursor: pointer;
     display: inline-flex; align-items: center; gap: 6px;
     transition: transform .15s, box-shadow .18s;
   }
   .btn:hover { transform: translateY(-1px); }
-  .btn--salvar   { background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 12px rgba(22,163,74,.3); }
-  .btn--imprimir { background: linear-gradient(135deg, #6d28d9, #8b5cf6); box-shadow: 0 4px 12px rgba(109,40,217,.3); }
-  .btn--cancelar { background: #fff; color: #475569; box-shadow: 0 3px 10px rgba(15,23,42,.1); }
+  .btn--salvar   { background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 3px 10px rgba(22,163,74,.3); }
+  .btn--imprimir { background: linear-gradient(135deg, #6d28d9, #8b5cf6); box-shadow: 0 3px 10px rgba(109,40,217,.3); }
+  .btn--cancelar { background: #fff; color: #475569; box-shadow: 0 2px 8px rgba(15,23,42,.1); }
   .btn--cancelar:hover { background: #f1f5f9; }
   .btn:disabled { opacity: .6; cursor: wait; }
 
   .toolbar__titulo {
-    flex: 1 1 260px;
-    font-size: 12.5px;
+    flex: 1 1 240px;
+    font-size: 12px;
     color: #5b21b6;
     font-weight: 600;
   }
   .toolbar__titulo strong { color: #be123c; }
 
-  /* ===== Folha A4 ===== */
+  /* ===== Folha A4 — 297mm alto, conteúdo em flexbox ===== */
   .folha {
     width: 210mm;
     height: 297mm;
     margin: 0 auto;
     background: #fff;
     border-radius: 6px;
-    box-shadow: 0 12px 32px rgba(30,58,138,.2);
-    padding: 12mm;
+    box-shadow: 0 10px 28px rgba(30,58,138,.2);
+    padding: 8mm 10mm;
     display: flex;
     flex-direction: column;
-    gap: 3mm;
+    gap: 1.6mm;
     overflow: hidden;
   }
 
@@ -84,7 +83,7 @@
   .cabecalho {
     border: 2px solid var(--azul-med);
     border-radius: 5px;
-    padding: 3mm 5mm;
+    padding: 1.8mm 4mm;
     text-align: center;
     background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
     position: relative;
@@ -93,40 +92,39 @@
   }
   .cabecalho::before {
     content: ""; position: absolute; top: 0; left: 0; right: 0;
-    height: 3px; background: linear-gradient(90deg, #6d28d9, #3b82f6, #10b981);
+    height: 2.5px; background: linear-gradient(90deg, #6d28d9, #3b82f6, #10b981);
   }
   .cabecalho::after {
     content: ""; position: absolute; bottom: 0; left: 0; right: 0;
-    height: 3px; background: linear-gradient(90deg, #f43f5e, #f97316, #facc15);
+    height: 2.5px; background: linear-gradient(90deg, #f43f5e, #f97316, #facc15);
   }
   .cabecalho__titulo {
-    font-size: 13.5pt; font-weight: 900; color: var(--azul);
+    font-size: 11pt; font-weight: 900; color: var(--azul);
     letter-spacing: .02em; text-transform: uppercase; line-height: 1.1;
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
   }
   .cabecalho__subtitulo {
-    font-size: 9.5pt; font-weight: 800; color: var(--laranja);
-    letter-spacing: .1em; text-transform: uppercase; margin-top: .8mm;
+    font-size: 8pt; font-weight: 800; color: var(--laranja);
+    letter-spacing: .1em; text-transform: uppercase; margin-top: .3mm;
   }
   .cabecalho__contatos {
     display: flex; justify-content: center; align-items: center;
-    gap: 6mm; margin-top: 1.6mm;
-    font-size: 7.5pt; font-weight: 600; color: var(--preto); flex-wrap: wrap;
+    gap: 4mm; margin-top: .8mm;
+    font-size: 6.3pt; font-weight: 600; color: var(--preto); flex-wrap: wrap;
   }
-  .cabecalho__contatos .item { display: inline-flex; align-items: center; gap: 4px; }
+  .cabecalho__contatos .item { display: inline-flex; align-items: center; gap: 3px; }
   .cabecalho__contatos svg { color: var(--azul-med); flex-shrink: 0; }
 
   /* ===== Título pill ===== */
   .titulo-ficha {
     align-self: center;
-    padding: 1.3mm 11mm;
+    padding: .8mm 8mm;
     border-radius: 999px;
     background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
     color: #fff;
-    font-size: 10pt; font-weight: 900;
-    letter-spacing: .16em; text-transform: uppercase;
-    box-shadow: 0 2px 8px rgba(30,58,138,.25);
-    margin: .8mm 0;
+    font-size: 8.5pt; font-weight: 900;
+    letter-spacing: .14em; text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(30,58,138,.25);
     flex-shrink: 0;
   }
 
@@ -134,12 +132,12 @@
   .barra {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 5mm;
-    padding: 1.8mm 3.5mm;
+    gap: 4mm;
+    padding: 1mm 3mm;
     background: var(--azul-clr);
     border: 1px solid #bfdbfe;
     border-radius: 4px;
-    font-size: 8pt; font-weight: 700; color: var(--azul);
+    font-size: 7pt; font-weight: 700; color: var(--azul);
     flex-shrink: 0;
   }
   .barra .campo {
@@ -158,12 +156,11 @@
     color: var(--preto);
     text-align: center;
     padding: 0 3px;
-    height: 14px;
+    height: 11px;
     outline: none;
     min-width: 0;
   }
   .barra input:focus { border-bottom-color: var(--azul-med); }
-  .barra input[readonly] { color: var(--cinza-esc); }
 
   /* ===== Seções ===== */
   .secao {
@@ -175,29 +172,29 @@
   .secao__titulo {
     background: linear-gradient(135deg, var(--azul-med), var(--azul));
     color: #fff;
-    padding: 1.4mm 3.2mm;
-    font-size: 8.5pt; font-weight: 800;
+    padding: .8mm 3mm;
+    font-size: 7.5pt; font-weight: 800;
     letter-spacing: .03em; text-transform: uppercase;
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 5px;
   }
   .secao__titulo .num {
     display: grid; place-items: center;
-    width: 16px; height: 16px; border-radius: 50%;
+    width: 13px; height: 13px; border-radius: 50%;
     background: #fff; color: var(--azul);
-    font-size: 9px; font-weight: 900; flex-shrink: 0;
+    font-size: 8px; font-weight: 900; flex-shrink: 0;
   }
   .secao__corpo {
-    padding: 2mm 3.2mm;
+    padding: 1mm 2.8mm;
     display: flex;
     flex-direction: column;
-    gap: 1.8mm;
+    gap: .8mm;
   }
 
   /* ===== Linhas e campos ===== */
   .linha {
     display: flex;
     align-items: flex-end;
-    gap: 4mm;
+    gap: 3mm;
     flex-wrap: nowrap;
     min-width: 0;
   }
@@ -214,35 +211,35 @@
   .campo.f2 { flex: 2; }
 
   .campo > label {
-    font-size: 7.5pt; font-weight: 700; color: var(--preto);
+    font-size: 6.3pt; font-weight: 700; color: var(--preto);
     white-space: nowrap; flex-shrink: 0;
   }
   .campo > input,
   .campo > select {
-    flex: 1; min-width: 40px; height: 14px;
+    flex: 1; min-width: 30px; height: 11px;
     border: 0; border-bottom: 1px dotted var(--cinza);
     background: transparent; font: inherit; font-weight: 700;
-    font-size: 8pt; color: var(--preto);
+    font-size: 6.6pt; color: var(--preto);
     padding: 0 2px; outline: none;
     text-transform: uppercase;
   }
   .campo > input:focus,
   .campo > select:focus { border-bottom-color: var(--azul-med); }
-  .campo > input.curto { min-width: 22px; max-width: 28px; text-align: center; }
-  .campo > input.medio { min-width: 44px; max-width: 58px; }
+  .campo > input.curto { min-width: 16px; max-width: 22px; text-align: center; }
+  .campo > input.medio { min-width: 34px; max-width: 44px; }
 
   .bloco {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 0px;
     width: 100%;
   }
-  .bloco > label { font-size: 7.5pt; font-weight: 700; color: var(--preto); }
+  .bloco > label { font-size: 6.3pt; font-weight: 700; color: var(--preto); line-height: 1.1; }
   .bloco > input {
-    height: 14px;
+    height: 11px;
     border: 0; border-bottom: 1px dotted var(--cinza);
     background: transparent; font: inherit; font-weight: 700;
-    font-size: 8pt; color: var(--preto);
+    font-size: 6.6pt; color: var(--preto);
     padding: 0 2px; outline: none;
     text-transform: uppercase;
   }
@@ -250,15 +247,15 @@
 
   /* ===== Checkbox / radio ===== */
   .check {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 7.5pt; font-weight: 600; color: var(--preto);
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 6.3pt; font-weight: 600; color: var(--preto);
     white-space: nowrap; cursor: pointer;
   }
   .check input[type="checkbox"],
   .check input[type="radio"] {
     appearance: none; -webkit-appearance: none;
-    width: 10px; height: 10px;
-    border: 1.3px solid var(--preto); border-radius: 2px;
+    width: 8px; height: 8px;
+    border: 1.1px solid var(--preto); border-radius: 2px;
     background: #fff; flex-shrink: 0; position: relative;
     cursor: pointer; margin: 0;
   }
@@ -272,7 +269,7 @@
   .checks {
     display: flex;
     flex-wrap: wrap;
-    gap: 2.5mm 4mm;
+    gap: 1.4mm 3mm;
     align-items: center;
     width: 100%;
   }
@@ -281,24 +278,24 @@
   .tabela {
     width: 100%;
     border-collapse: collapse;
-    font-size: 7.5pt;
+    font-size: 6.3pt;
     border-radius: 4px;
     overflow: hidden;
   }
   .tabela thead th {
     background: linear-gradient(135deg, var(--azul-med), var(--azul));
     color: #fff;
-    font-size: 7.5pt;
+    font-size: 6.3pt;
     font-weight: 800;
     text-align: left;
-    padding: 1.4mm 2.6mm;
+    padding: .8mm 2.2mm;
     text-transform: uppercase;
     letter-spacing: .03em;
   }
   .tabela tbody td {
-    padding: 0 2.6mm;
+    padding: 0 2.2mm;
     border-bottom: 1px solid var(--cinza-clr);
-    height: 5.6mm;
+    height: 4mm;
     font-weight: 600;
     vertical-align: middle;
   }
@@ -318,44 +315,44 @@
 
   /* ===== Aviso ===== */
   .aviso {
-    padding: 1.2mm 2.6mm;
-    border-left: 3px solid #ca8a04;
+    padding: .6mm 2.2mm;
+    border-left: 2.5px solid #ca8a04;
     background: #fef9c3;
     color: #78350f;
-    font-size: 7pt;
+    font-size: 5.8pt;
     font-weight: 600;
     border-radius: 3px;
-    margin-top: .8mm;
+    margin-top: .3mm;
   }
 
   /* ===== Termo ===== */
   .termo {
-    padding: 1.8mm 3.2mm;
+    padding: 1mm 2.8mm;
     border: 1px solid var(--cinza-clr);
     border-left: 3px solid var(--azul-med);
     border-radius: 4px;
     background: #eff6ff;
-    font-size: 7pt;
-    line-height: 1.45;
+    font-size: 5.8pt;
+    line-height: 1.35;
     color: var(--cinza-esc);
   }
   .termo strong { color: var(--azul); font-weight: 800; }
 
   /* ===== Assinatura ===== */
   .assinatura {
-    margin-top: 4mm;
+    margin-top: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.6mm;
-    padding-top: 2mm;
+    gap: .8mm;
+    padding-top: 1mm;
     flex-shrink: 0;
   }
   .assinatura__local {
     display: flex;
     align-items: flex-end;
-    gap: 5px;
-    font-size: 8.5pt;
+    gap: 3px;
+    font-size: 7pt;
     font-weight: 600;
     color: var(--preto);
     flex-wrap: wrap;
@@ -368,39 +365,39 @@
     font: inherit;
     font-weight: 700;
     text-align: center;
-    padding: 0 3px;
-    min-width: 20mm;
-    height: 14px;
+    padding: 0 2px;
+    min-width: 14mm;
+    height: 11px;
     outline: none;
   }
-  .assinatura__local input.largo { min-width: 36mm; }
+  .assinatura__local input.largo { min-width: 26mm; }
   .assinatura__local input:focus { border-bottom-color: var(--azul-med); }
 
   .assinatura__linha {
-    width: 90mm;
+    width: 75mm;
     height: 1px;
     background: var(--preto);
-    margin-top: 4mm;
+    margin-top: 2mm;
   }
   .assinatura__nome {
-    font-size: 8.5pt;
+    font-size: 7pt;
     font-weight: 800;
     letter-spacing: .06em;
     text-transform: uppercase;
     color: var(--preto);
   }
 
-  /* ===== Toast ===== */
+  /* ===== Toast + Loading ===== */
   .toast {
     position: fixed;
-    bottom: 24px; right: 24px;
-    padding: 12px 18px;
+    bottom: 20px; right: 20px;
+    padding: 10px 16px;
     border-radius: 10px;
     background: #16a34a;
     color: #fff;
     font-weight: 700;
-    font-size: 13px;
-    box-shadow: 0 12px 28px rgba(0,0,0,.2);
+    font-size: 12.5px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.2);
     z-index: 9999;
     opacity: 0;
     transform: translateY(12px);
@@ -431,11 +428,9 @@
       width: 210mm;
       height: 297mm;
       margin: 0;
-      padding: 12mm;
+      padding: 8mm 10mm;
       border-radius: 0;
       box-shadow: none;
-      page-break-after: avoid;
-      break-after: avoid;
     }
     input, select, textarea { caret-color: transparent; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -447,7 +442,7 @@
 <!-- Toolbar -->
 <div class="toolbar no-print">
   <button class="btn btn--salvar" id="btnSalvar" onclick="salvarFicha()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
       <polyline points="17 21 17 13 7 13 7 21"/>
       <polyline points="7 3 7 8 15 8"/>
@@ -455,15 +450,15 @@
     Salvar inscrição
   </button>
   <button class="btn btn--imprimir" onclick="window.print()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="6 9 6 2 18 2 18 9"/>
       <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
       <rect x="6" y="14" width="12" height="8"/>
     </svg>
-    Imprimir ficha
+    Imprimir
   </button>
   <button class="btn btn--cancelar" onclick="voltarAdmin()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="19" y1="12" x2="5" y2="12"/>
       <polyline points="12 19 5 12 12 5"/>
     </svg>
@@ -478,7 +473,7 @@
   <!-- Cabeçalho -->
   <header class="cabecalho">
     <div class="cabecalho__titulo">
-      <svg width="20" height="20" viewBox="0 0 100 90" fill="none">
+      <svg width="16" height="16" viewBox="0 0 100 90" fill="none">
         <defs>
           <linearGradient id="gRoxo" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#6d28d9"/></linearGradient>
           <linearGradient id="gRosa" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#e11d48"/></linearGradient>
@@ -496,16 +491,16 @@
     <div class="cabecalho__subtitulo">Tríade Conexão</div>
     <div class="cabecalho__contatos">
       <span class="item">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
         WhatsApp: (79) 98816-0217
       </span>
       <span class="item">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
-        Instagram: conexao.triade
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+        @conexao.triade
       </span>
       <span class="item">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Rua 16, Nº 365 — Bq. Conjunto Fernando Collor
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Rua 16, Nº 365 — Bq. Conj. Fernando Collor
       </span>
     </div>
   </header>
@@ -540,31 +535,31 @@
           <label>anos</label>
         </div>
         <div class="campo f0">
-          <label>Turno Escolar:</label>
-          <div class="checks" style="gap: 3mm;">
+          <label>Turno:</label>
+          <div class="checks" style="gap: 2.5mm;">
             <label class="check"><input type="checkbox" name="f_turno_escolar" value="Manhã" /> Manhã</label>
             <label class="check"><input type="checkbox" name="f_turno_escolar" value="Tarde" /> Tarde</label>
           </div>
         </div>
       </div>
       <div class="linha">
-        <div class="campo f2"><label>Escola onde estuda:</label><input id="f_escola" /></div>
-        <div class="campo f0" style="min-width: 55mm;"><label>Série / Ano:</label><input id="f_serie" style="min-width: 30mm;" /></div>
+        <div class="campo f2"><label>Escola:</label><input id="f_escola" /></div>
+        <div class="campo f0" style="min-width: 46mm;"><label>Série / Ano:</label><input id="f_serie" style="min-width: 26mm;" /></div>
       </div>
       <div class="linha wrap">
-        <label style="font-size:7.5pt;font-weight:700;color:var(--preto);white-space:nowrap;">Nível Escolar:</label>
+        <label style="font-size:6.3pt;font-weight:700;color:var(--preto);white-space:nowrap;">Nível Escolar:</label>
         <div class="checks">
-          <label class="check"><input type="checkbox" name="f_nivel" value="Anos Iniciais" /> Anos Iniciais (1º ao 5º ano)</label>
-          <label class="check"><input type="checkbox" name="f_nivel" value="Anos Finais" /> Anos Finais (6º ao 9º ano)</label>
+          <label class="check"><input type="checkbox" name="f_nivel" value="Anos Iniciais" /> Anos Iniciais (1º–5º)</label>
+          <label class="check"><input type="checkbox" name="f_nivel" value="Anos Finais" /> Anos Finais (6º–9º)</label>
           <label class="check"><input type="checkbox" name="f_nivel" value="Ensino Médio" /> Ensino Médio</label>
         </div>
       </div>
       <div class="linha wrap">
-        <label style="font-size:7.5pt;font-weight:700;color:var(--preto);white-space:nowrap;">Possui alguma alergia, condição médica ou necessidade específica?</label>
+        <label style="font-size:6.3pt;font-weight:700;color:var(--preto);white-space:nowrap;">Possui alergia, condição médica ou necessidade específica?</label>
         <div class="checks" style="flex:1;">
           <label class="check"><input type="checkbox" name="f_alergia" value="Não" /> Não</label>
-          <label class="check"><input type="checkbox" name="f_alergia" value="Sim" /> Sim. Qual?</label>
-          <input id="f_alergia_desc" style="flex:1;min-width:70px;height:14px;border:0;border-bottom:1px dotted var(--cinza);background:transparent;font:inherit;font-weight:600;font-size:7.5pt;padding:0 2px;outline:none;text-transform:uppercase;" />
+          <label class="check"><input type="checkbox" name="f_alergia" value="Sim" /> Sim:</label>
+          <input id="f_alergia_desc" style="flex:1;min-width:60px;height:11px;border:0;border-bottom:1px dotted var(--cinza);background:transparent;font:inherit;font-weight:600;font-size:6.3pt;padding:0 2px;outline:none;text-transform:uppercase;" />
         </div>
       </div>
     </div>
@@ -579,11 +574,11 @@
         <input id="f_responsavel" />
       </div>
       <div class="linha wrap">
-        <label style="font-size:7.5pt;font-weight:700;color:var(--preto);">Parentesco:</label>
+        <label style="font-size:6.3pt;font-weight:700;color:var(--preto);">Parentesco:</label>
         <div class="checks">
           <label class="check"><input type="radio" name="f_parentesco" value="Mãe" /> Mãe</label>
           <label class="check"><input type="radio" name="f_parentesco" value="Pai" /> Pai</label>
-          <label class="check"><input type="radio" name="f_parentesco" value="Avô / Avó" /> Avô / Avó</label>
+          <label class="check"><input type="radio" name="f_parentesco" value="Avô / Avó" /> Avô/Avó</label>
           <label class="check"><input type="radio" name="f_parentesco" value="Outro" /> Outro</label>
         </div>
       </div>
@@ -607,30 +602,30 @@
     <div class="secao__titulo"><span class="num">3</span> Plano e Modalidade no Reforço Escolar</div>
     <div class="secao__corpo">
       <div class="linha wrap">
-        <label style="font-size:7.5pt;font-weight:700;color:var(--preto);white-space:nowrap;">Turno no Reforço:</label>
+        <label style="font-size:6.3pt;font-weight:700;color:var(--preto);white-space:nowrap;">Turno no Reforço:</label>
         <div class="checks">
           <label class="check"><input type="checkbox" name="f_turno_reforco" value="Manhã" /> Manhã</label>
           <label class="check"><input type="checkbox" name="f_turno_reforco" value="Tarde" /> Tarde</label>
-          <label class="check"><input type="checkbox" name="f_turno_reforco" value="Noite (especial)" /> Noite (casos extremos)</label>
+          <label class="check"><input type="checkbox" name="f_turno_reforco" value="Noite (especial)" /> Noite</label>
         </div>
       </div>
       <div class="linha wrap">
-        <label style="font-size:7.5pt;font-weight:700;color:var(--preto);white-space:nowrap;">Dias da Semana:</label>
+        <label style="font-size:6.3pt;font-weight:700;color:var(--preto);white-space:nowrap;">Dias da Semana:</label>
         <div class="checks">
-          <label class="check"><input type="checkbox" name="f_dias" value="Segunda" /> Segunda</label>
-          <label class="check"><input type="checkbox" name="f_dias" value="Terça" /> Terça</label>
-          <label class="check"><input type="checkbox" name="f_dias" value="Quarta" /> Quarta</label>
-          <label class="check"><input type="checkbox" name="f_dias" value="Quinta" /> Quinta</label>
-          <label class="check"><input type="checkbox" name="f_dias" value="Sexta" /> Sexta</label>
+          <label class="check"><input type="checkbox" name="f_dias" value="Segunda" /> Seg</label>
+          <label class="check"><input type="checkbox" name="f_dias" value="Terça" /> Ter</label>
+          <label class="check"><input type="checkbox" name="f_dias" value="Quarta" /> Qua</label>
+          <label class="check"><input type="checkbox" name="f_dias" value="Quinta" /> Qui</label>
+          <label class="check"><input type="checkbox" name="f_dias" value="Sexta" /> Sex</label>
         </div>
       </div>
       <div class="linha wrap">
-        <label style="font-size:7.5pt;font-weight:700;color:var(--preto);white-space:nowrap;">Serviços Contratados:</label>
+        <label style="font-size:6.3pt;font-weight:700;color:var(--preto);white-space:nowrap;">Serviços:</label>
         <div class="checks">
-          <label class="check"><input type="checkbox" name="f_servicos" value="Tarefas de Casa" /> Acompanhamento de Tarefas de Casa</label>
-          <label class="check"><input type="checkbox" name="f_servicos" value="Alfabetização" /> Alfabetização / Letramento</label>
+          <label class="check"><input type="checkbox" name="f_servicos" value="Tarefas de Casa" /> Acomp. de Tarefas</label>
+          <label class="check"><input type="checkbox" name="f_servicos" value="Alfabetização" /> Alfabetização</label>
           <label class="check"><input type="checkbox" name="f_servicos" value="Reforço Específico" /> Reforço Específico</label>
-          <label class="check"><input type="checkbox" name="f_servicos" value="Preparatório" /> Preparatório para Provas</label>
+          <label class="check"><input type="checkbox" name="f_servicos" value="Preparatório" /> Preparatório</label>
         </div>
       </div>
     </div>
@@ -638,11 +633,11 @@
 
   <!-- 4. Tabela de Valores -->
   <section class="secao">
-    <div class="secao__titulo"><span class="num">4</span> Tabela de Valores e Condições de Pagamento</div>
+    <div class="secao__titulo"><span class="num">4</span> Valores e Condições de Pagamento</div>
     <div class="secao__corpo">
       <table class="tabela">
         <thead>
-          <tr><th>Categoria / Nível Escolar</th><th>Frequência</th><th>Mensalidade</th></tr>
+          <tr><th>Categoria / Nível</th><th>Frequência</th><th>Mensalidade</th></tr>
         </thead>
         <tbody>
           <tr>
@@ -662,15 +657,15 @@
           </tr>
         </tbody>
       </table>
-      <div class="aviso"><strong>Desconto Irmãos:</strong> 10% de desconto na mensalidade do segundo filho.</div>
+      <div class="aviso"><strong>Desconto Irmãos:</strong> 10% na mensalidade do segundo filho.</div>
       <div class="linha">
         <div class="campo f0">
-          <label>Dia de Vencimento:</label>
+          <label>Vencimento:</label>
           <input class="medio" id="f_vencimento" maxlength="2" />
           <label>de cada mês.</label>
         </div>
         <div class="campo" style="justify-content:flex-end;">
-          <label style="font-size:7.5pt;font-weight:700;color:var(--preto);white-space:nowrap;">Forma de Pagamento:</label>
+          <label style="font-size:6.3pt;font-weight:700;color:var(--preto);white-space:nowrap;">Pagamento:</label>
           <div class="checks" style="width:auto;">
             <label class="check"><input type="checkbox" name="f_forma" value="PIX" /> PIX</label>
             <label class="check"><input type="checkbox" name="f_forma" value="Dinheiro" /> Dinheiro</label>
@@ -690,16 +685,16 @@
       </div>
       <div class="linha">
         <div class="campo"><label>1. Nome:</label><input id="f_aut1" /></div>
-        <div class="campo f0" style="min-width: 55mm;"><label>Parentesco:</label><input class="medio" id="f_aut1_parentesco" style="min-width: 30mm;" /></div>
+        <div class="campo f0" style="min-width: 46mm;"><label>Parentesco:</label><input class="medio" id="f_aut1_parentesco" style="min-width: 26mm;" /></div>
       </div>
       <div class="linha">
         <div class="campo"><label>2. Nome:</label><input id="f_aut2" /></div>
-        <div class="campo f0" style="min-width: 55mm;"><label>Parentesco:</label><input class="medio" id="f_aut2_parentesco" style="min-width: 30mm;" /></div>
+        <div class="campo f0" style="min-width: 46mm;"><label>Parentesco:</label><input class="medio" id="f_aut2_parentesco" style="min-width: 26mm;" /></div>
       </div>
       <div class="linha wrap">
-        <label style="font-size:7.5pt;font-weight:700;color:var(--preto);white-space:nowrap;">Uso de Imagem:</label>
+        <label style="font-size:6.3pt;font-weight:700;color:var(--preto);white-space:nowrap;">Uso de Imagem:</label>
         <div class="checks">
-          <span style="font-size:7.5pt;font-weight:600;">Autorizo o uso de fotos/vídeos em atividades pedagógicas para divulgação?</span>
+          <span style="font-size:6.3pt;font-weight:600;">Autorizo o uso de fotos/vídeos em atividades pedagógicas?</span>
           <label class="check"><input type="radio" name="f_imagem" value="SIM" /> SIM</label>
           <label class="check"><input type="radio" name="f_imagem" value="NÃO" /> NÃO</label>
         </div>
@@ -709,7 +704,7 @@
 
   <!-- 6. Declaração -->
   <section class="secao">
-    <div class="secao__titulo"><span class="num">6</span> Declaração e Assinaturas</div>
+    <div class="secao__titulo"><span class="num">6</span> Declaração</div>
     <div class="secao__corpo">
       <div class="termo">
         Declaro que as informações acima são verdadeiras e estou de acordo com os valores, prazos e termos estabelecidos.
