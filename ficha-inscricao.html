@@ -337,7 +337,7 @@
   }
   .termo strong { color: var(--azul); font-weight: 800; }
 
-  /* ===== Espaçador (fica com altura 0 quando conteúdo é grande) ===== */
+  /* ===== Espaçador (absorve espaço restante) ===== */
   .espacador {
     flex: 1 1 auto;
     min-height: 4mm;
@@ -716,7 +716,7 @@
     </div>
   </section>
 
-  <!-- Espaçador flexível: absorve o espaço restante, garantindo que a assinatura apareça sempre -->
+  <!-- Espaçador flexível -->
   <div class="espacador" aria-hidden="true"></div>
 
   <!-- Assinatura -->
@@ -738,7 +738,9 @@
 <div class="toast" id="toast"></div>
 <div class="loading-overlay" id="loading">Carregando...</div>
 
+<!-- ⚠️ ORDEM: db.js ANTES de shared.js (shared usa DB) -->
 <script src="db.js"></script>
+<script src="shared.js"></script>
 <script>
 /* ============================================================
    FICHA DE INSCRIÇÃO — Supabase
@@ -749,7 +751,7 @@ let inscricaoAtual = null;
 function $(id) { return document.getElementById(id); }
 function getQuery(k) { return new URLSearchParams(location.search).get(k); }
 
-function toast(msg, erro = false) {
+function toastMsg(msg, erro = false) {
   const t = $('toast');
   t.textContent = msg;
   t.className = 'toast show' + (erro ? ' erro' : '');
@@ -894,7 +896,7 @@ async function salvarFicha() {
   const dados = coletarDados();
 
   if (!dados.nome) {
-    toast('Informe o nome do aluno.', true);
+    toastMsg('Informe o nome do aluno.', true);
     $('f_nome').focus();
     return;
   }
@@ -905,13 +907,13 @@ async function salvarFicha() {
   try {
     if (inscricaoAtual && inscricaoAtual.id) {
       await DB.update('inscricoes', inscricaoAtual.id, dados);
-      toast('Inscrição atualizada.');
+      toastMsg('Inscrição atualizada.');
       inscricaoAtual = { ...inscricaoAtual, ...dados };
     } else {
       const novo = await DB.create('inscricoes', dados);
       inscricaoAtual = novo;
       $('f_numero').value = novo.numero;
-      toast('Inscrição salva.');
+      toastMsg('Inscrição salva.');
       history.replaceState(null, '', `?id=${novo.id}`);
     }
 
@@ -926,7 +928,7 @@ async function salvarFicha() {
     }
   } catch (err) {
     console.error(err);
-    toast('Erro ao salvar inscrição: ' + (err.message || 'erro desconhecido'), true);
+    toastMsg('Erro ao salvar inscrição: ' + (err.message || 'erro desconhecido'), true);
     $('btnSalvar').disabled = false;
     showLoading(false);
   }
@@ -951,7 +953,7 @@ function voltarAdmin() {
         preencherFormulario(existente);
         $('tituloModo').innerHTML = 'Editando inscrição · Nº ' + (existente.numero || '—');
       } else {
-        toast('Inscrição não encontrada.', true);
+        toastMsg('Inscrição não encontrada.', true);
       }
     } else {
       $('f_numero').value = gerarNumero();
@@ -960,7 +962,7 @@ function voltarAdmin() {
     }
   } catch (err) {
     console.error(err);
-    toast('Erro ao carregar dados.', true);
+    toastMsg('Erro ao carregar dados.', true);
   }
 
   document.addEventListener('keydown', (e) => {
