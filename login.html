@@ -54,7 +54,39 @@
   <div class="login-right">
     <form class="login-card" id="loginForm" onsubmit="fazerLogin(event)">
       <h2>Bem-vindo de volta</h2>
-      <p class="sub">Entre com sua matrícula para acessar o painel.</p>
+      <p class="sub">Escolha o painel e entre com sua matrícula.</p>
+
+      <!-- Seletor de painel -->
+      <div class="perfil-select" id="perfilSelect">
+        <div class="perfil-opt active" data-papel="admin">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/>
+          </svg>
+          Admin
+        </div>
+        <div class="perfil-opt" data-papel="professor">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+          </svg>
+          Professor
+        </div>
+        <div class="perfil-opt" data-papel="aluno">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+          Aluno
+        </div>
+        <div class="perfil-opt" data-papel="pais">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Pais
+        </div>
+      </div>
 
       <div class="login-field">
         <label for="matricula">Matrícula</label>
@@ -109,8 +141,10 @@
 <script src="shared.js"></script>
 <script>
 /* ============================================================
-   LOGIN POR MATRÍCULA
+   LOGIN POR MATRÍCULA + Seletor de painel com validação
    ============================================================ */
+
+let painelSelecionado = 'admin';
 
 const inputMatricula = document.getElementById('matricula');
 const erroEl = document.getElementById('erroLogin');
@@ -119,6 +153,16 @@ const btnEntrar = document.getElementById('btnEntrar');
 /* ---------- Só dígitos na matrícula ---------- */
 inputMatricula.addEventListener('input', () => {
   inputMatricula.value = inputMatricula.value.replace(/\D/g, '').slice(0, 8);
+});
+
+/* ---------- Seleção do painel ---------- */
+document.querySelectorAll('.perfil-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.perfil-opt').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    painelSelecionado = opt.dataset.papel;
+    esconderErro();
+  });
 });
 
 /* ---------- Helpers ---------- */
@@ -164,17 +208,28 @@ async function fazerLogin(e) {
       return;
     }
 
-    await DB.sync();
+    // ---------- VALIDAÇÃO DO PAINEL ----------
+    if (res.usuario.papel !== painelSelecionado) {
+      await Auth.logout();
 
-    const rota = ROTAS[res.usuario.papel];
-    if (!rota) {
-      mostrarErro('Papel de usuário inválido.');
+      const nomes = {
+        admin: 'Administrador',
+        professor: 'Professor',
+        aluno: 'Aluno',
+        pais: 'Pais/Responsável'
+      };
+      const papelCorreto = nomes[res.usuario.papel] || res.usuario.papel;
+      const papelEscolhido = nomes[painelSelecionado] || painelSelecionado;
+
+      mostrarErro(`Esta matrícula pertence ao painel "${papelCorreto}", não ao "${papelEscolhido}".`);
       btnEntrar.disabled = false;
       btnEntrar.style.opacity = '1';
       return;
     }
 
-    window.location.href = rota;
+    // ---------- SUCESSO ----------
+    await DB.sync();
+    window.location.href = ROTAS[res.usuario.papel];
 
   } catch (err) {
     console.error(err);
@@ -186,7 +241,7 @@ async function fazerLogin(e) {
 
 /* ---------- Boot ---------- */
 (async () => {
-  // Se já tem sessão ativa, redireciona direto
+  // Se já tem sessão válida, redireciona direto
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
     const u = Auth.atual();
