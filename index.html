@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tríade Conexão</title>
+<link rel="icon" href="data:," />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%);
+    color: #fff;
+    padding: 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .box {
+    text-align: center;
+    max-width: 380px;
+  }
+
+  .logo {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 12px 32px rgba(37, 99, 235, .4);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+
+  p {
+    font-size: 14px;
+    color: #94A3B8;
+    margin-bottom: 24px;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(255, 255, 255, .2);
+    border-top-color: #60A5FA;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .msg {
+    margin-top: 16px;
+    font-size: 13px;
+    color: #CBD5E1;
+  }
+
+  .btn-voltar {
+    margin-top: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .2s;
+    text-decoration: none;
+  }
+
+  .btn-voltar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, .5);
+  }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <div class="logo">
+    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+      <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+    </svg>
+  </div>
+
+  <h1>Tríade Conexão</h1>
+  <p>Redirecionando...</p>
+
+  <div class="spinner" aria-label="Carregando"></div>
+
+  <div class="msg" id="msg">Verificando sessão</div>
+
+  <a href="login.html" class="btn-voltar" id="btnVoltar" style="display:none;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/>
+      <polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Ir para o login
+  </a>
+</div>
+
+<script src="db.js"></script>
+<script src="shared.js"></script>
+<script>
+/* ============================================================
+   INDEX — redirecionador automático por papel
+   ============================================================ */
+
+const ROTAS_POR_PAPEL = {
+  admin:     'admin.html',
+  professor: 'professor.html',
+  aluno:     'aluno.html',
+  pais:      'pais.html'
+};
+
+function mostrarErro(msg) {
+  const el = document.getElementById('msg');
+  el.innerHTML = '⚠️ ' + msg;
+  el.style.color = '#FCA5A5';
+  document.getElementById('btnVoltar').style.display = 'inline-flex';
+}
+
+(async () => {
+  try {
+    // 1. Verifica se existe sessão ativa no Supabase
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error || !session) {
+      // Sem sessão → login
+      window.location.replace('login.html');
+      return;
+    }
+
+    // 2. Tenta pegar do cache local primeiro (rápido)
+    let perfil = Auth.atual();
+
+    // 3. Se o cache não bate com a sessão, busca do banco
+    if (!perfil || perfil.id !== session.user.id) {
+      const { data, error: errPerfil } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (errPerfil || !data) {
+        // Sessão existe mas perfil não → força logout
+        await supabase.auth.signOut();
+        localStorage.removeItem('triade_session');
+        window.location.replace('login.html');
+        return;
+      }
+
+      perfil = Auth._perfilParaSessao(data);
+      localStorage.setItem('triade_session', JSON.stringify(perfil));
+    }
+
+    // 4. Descobre o papel e redireciona
+    const rota = ROTAS_POR_PAPEL[perfil.papel];
+
+    if (!rota) {
+      mostrarErro('Perfil inválido. Contate a administração.');
+      return;
+    }
+
+    // Se for admin, sincroniza cache antes (garante dados frescos)
+    if (perfil.papel === 'admin') {
+      await DB.sync();
+    }
+
+    window.location.replace(rota);
+
+  } catch (err) {
+    console.error('[index]', err);
+    mostrarErro('Erro ao verificar sessão. Tente novamente.');
+  }
+})();
+</script>
+
+</body>
+</html>
