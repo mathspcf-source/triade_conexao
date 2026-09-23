@@ -32,7 +32,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ===== Toolbar ===== */
   .toolbar {
     max-width: 210mm;
     margin: 0 auto 10px;
@@ -64,7 +63,6 @@
   }
   .toolbar__titulo strong { color: #be123c; }
 
-  /* ===== Folha A4 ===== */
   .folha {
     width: 210mm;
     height: 297mm;
@@ -78,7 +76,6 @@
     gap: 2mm;
   }
 
-  /* ===== Cabeçalho ===== */
   .cabecalho {
     border: 2px solid var(--azul-med);
     border-radius: 5px;
@@ -114,7 +111,6 @@
   .cabecalho__contatos .item { display: inline-flex; align-items: center; gap: 3px; }
   .cabecalho__contatos svg { color: var(--azul-med); flex-shrink: 0; }
 
-  /* ===== Título pill ===== */
   .titulo-ficha {
     align-self: center;
     padding: .9mm 9mm;
@@ -127,7 +123,6 @@
     flex-shrink: 0;
   }
 
-  /* ===== Barra Data / Nº ===== */
   .barra {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -161,7 +156,6 @@
   }
   .barra input:focus { border-bottom-color: var(--azul-med); }
 
-  /* ===== Seções ===== */
   .secao {
     border: 1px solid var(--cinza-clr);
     border-radius: 4px;
@@ -189,7 +183,6 @@
     gap: 1mm;
   }
 
-  /* ===== Linhas e campos ===== */
   .linha {
     display: flex;
     align-items: flex-end;
@@ -244,7 +237,6 @@
   }
   .bloco > input:focus { border-bottom-color: var(--azul-med); }
 
-  /* ===== Checkbox / radio ===== */
   .check {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 7pt; font-weight: 600; color: var(--preto);
@@ -273,7 +265,6 @@
     width: 100%;
   }
 
-  /* ===== Tabela ===== */
   .tabela {
     width: 100%;
     border-collapse: collapse;
@@ -312,7 +303,6 @@
   }
   .tabela input:focus { border-bottom: 1px dotted var(--azul-med); }
 
-  /* ===== Aviso ===== */
   .aviso {
     padding: .8mm 2.4mm;
     border-left: 2.5px solid #ca8a04;
@@ -324,7 +314,6 @@
     margin-top: .4mm;
   }
 
-  /* ===== Termo ===== */
   .termo {
     padding: 1.2mm 3mm;
     border: 1px solid var(--cinza-clr);
@@ -337,13 +326,11 @@
   }
   .termo strong { color: var(--azul); font-weight: 800; }
 
-  /* ===== Espaçador (absorve espaço restante) ===== */
   .espacador {
     flex: 1 1 auto;
     min-height: 4mm;
   }
 
-  /* ===== Assinatura ===== */
   .assinatura {
     display: flex;
     flex-direction: column;
@@ -391,7 +378,6 @@
     color: var(--preto);
   }
 
-  /* ===== Toast + Loading ===== */
   .toast {
     position: fixed;
     bottom: 20px; right: 20px;
@@ -443,7 +429,6 @@
 </head>
 <body>
 
-<!-- Toolbar -->
 <div class="toolbar no-print">
   <button class="btn btn--salvar" id="btnSalvar" onclick="salvarFicha()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -471,10 +456,8 @@
   <p class="toolbar__titulo" id="tituloModo">Nova inscrição · preencha os campos e clique em <strong>Salvar</strong></p>
 </div>
 
-<!-- Folha -->
 <div class="folha">
 
-  <!-- Cabeçalho -->
   <header class="cabecalho">
     <div class="cabecalho__titulo">
       <svg width="18" height="18" viewBox="0 0 100 90" fill="none">
@@ -516,7 +499,6 @@
     <span class="campo">Matrícula Nº: <input type="text" id="f_numero" readonly /></span>
   </div>
 
-  <!-- 1. Dados do Aluno -->
   <section class="secao">
     <div class="secao__titulo"><span class="num">1</span> Dados do Aluno(a)</div>
     <div class="secao__corpo">
@@ -569,7 +551,6 @@
     </div>
   </section>
 
-  <!-- 2. Responsável -->
   <section class="secao">
     <div class="secao__titulo"><span class="num">2</span> Dados do Responsável Legal</div>
     <div class="secao__corpo">
@@ -601,7 +582,6 @@
     </div>
   </section>
 
-  <!-- 3. Plano e Modalidade -->
   <section class="secao">
     <div class="secao__titulo"><span class="num">3</span> Plano e Modalidade no Reforço Escolar</div>
     <div class="secao__corpo">
@@ -635,7 +615,6 @@
     </div>
   </section>
 
-  <!-- 4. Tabela de Valores -->
   <section class="secao">
     <div class="secao__titulo"><span class="num">4</span> Tabela de Valores e Condições de Pagamento</div>
     <div class="secao__corpo">
@@ -680,7 +659,6 @@
     </div>
   </section>
 
-  <!-- 5. Autorizações -->
   <section class="secao">
     <div class="secao__titulo"><span class="num">5</span> Autorizações e Termos</div>
     <div class="secao__corpo">
@@ -706,7 +684,6 @@
     </div>
   </section>
 
-  <!-- 6. Declaração -->
   <section class="secao">
     <div class="secao__titulo"><span class="num">6</span> Declaração e Assinaturas</div>
     <div class="secao__corpo">
@@ -716,10 +693,8 @@
     </div>
   </section>
 
-  <!-- Espaçador flexível -->
   <div class="espacador" aria-hidden="true"></div>
 
-  <!-- Assinatura -->
   <div class="assinatura">
     <div class="assinatura__local">
       <span>Nossa Senhora do Socorro / SE,</span>
@@ -734,13 +709,10 @@
 
 </div>
 
-<!-- Toast + Loading -->
 <div class="toast" id="toast"></div>
 <div class="loading-overlay" id="loading">Carregando...</div>
 
-<!-- ⚠️ ORDEM: db.js ANTES de shared.js (shared usa DB) -->
 <script src="db.js"></script>
-<script src="shared.js"></script>
 <script>
 /* ============================================================
    FICHA DE INSCRIÇÃO — Supabase
@@ -748,17 +720,15 @@
 
 let inscricaoAtual = null;
 
-function $(id) { return document.getElementById(id); }
-function getQuery(k) { return new URLSearchParams(location.search).get(k); }
-
-function toastMsg(msg, erro = false) {
-  const t = $('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (erro ? ' erro' : '');
-  setTimeout(() => t.className = 'toast', 2400);
+/* ============================================================
+   Utilitários locais (não dependem de shared.js)
+   ============================================================ */
+function hojeISO() {
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off * 60000);
+  return local.toISOString().slice(0, 10);
 }
-
-function showLoading(show) { $('loading').classList.toggle('show', show); }
 
 function fmtDataBR(iso) {
   if (!iso) return '';
@@ -772,6 +742,20 @@ function fmtDataBR(iso) {
   const mm = String(d.getMonth() + 1).padStart(2,'0');
   return `${dd}/${mm}/${d.getFullYear()}`;
 }
+
+function toastMsg(msg, erro = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (erro ? ' erro' : '');
+  setTimeout(() => t.className = 'toast', 2400);
+}
+
+function showLoading(show) {
+  document.getElementById('loading').classList.toggle('show', show);
+}
+
+function $(id) { return document.getElementById(id); }
+function getQuery(k) { return new URLSearchParams(location.search).get(k); }
 
 function gerarNumero() {
   const lista = DB.list('inscricoes');
