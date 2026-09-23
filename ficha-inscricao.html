@@ -21,6 +21,8 @@
     --cinza:     #64748b;
     --cinza-clr: #e2e8f0;
     --branco:    #ffffff;
+    --gap-linha: 2mm;
+    --pad-secao: 2.4mm 3.2mm;
   }
 
   html { -webkit-text-size-adjust: 100%; }
@@ -33,6 +35,7 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* ===== Toolbar ===== */
   .toolbar {
     max-width: 210mm;
     margin: 0 auto 14px;
@@ -64,6 +67,7 @@
   }
   .toolbar__titulo strong { color: #be123c; }
 
+  /* ===== Folha A4 ===== */
   .folha {
     width: 210mm;
     height: 297mm;
@@ -77,6 +81,7 @@
     gap: 2.5mm;
   }
 
+  /* ===== Cabeçalho ===== */
   .cabecalho {
     border: 2px solid var(--azul-med);
     border-radius: 6px;
@@ -111,6 +116,7 @@
   .cabecalho__contatos .item { display: inline-flex; align-items: center; gap: 4px; }
   .cabecalho__contatos svg { color: var(--azul-med); flex-shrink: 0; }
 
+  /* ===== Título pill ===== */
   .titulo-ficha {
     align-self: center;
     padding: 1.6mm 12mm;
@@ -123,25 +129,41 @@
     margin: 1mm 0;
   }
 
+  /* ===== Barra Data / Nº ===== */
   .barra {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1.6mm 3mm;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4mm;
+    padding: 1.8mm 3.5mm;
     background: var(--azul-clr);
     border: 1px solid #bfdbfe;
     border-radius: 4px;
     font-size: 9pt; font-weight: 700; color: var(--azul);
   }
-  .barra .campo { display: inline-flex; align-items: center; gap: 4px; }
+  .barra .campo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
   .barra input {
-    border: 0; border-bottom: 1.2px dotted var(--cinza);
-    background: transparent; font: inherit; font-weight: 800;
-    color: var(--preto); text-align: center;
-    padding: 0 3px; min-width: 26mm; height: 15px;
+    flex: 1;
+    border: 0;
+    border-bottom: 1.2px dotted var(--cinza);
+    background: transparent;
+    font: inherit;
+    font-weight: 800;
+    color: var(--preto);
+    text-align: center;
+    padding: 0 3px;
+    height: 16px;
     outline: none;
+    min-width: 0;
   }
   .barra input:focus { border-bottom-color: var(--azul-med); }
   .barra input[readonly] { color: var(--cinza-esc); }
 
+  /* ===== Seções ===== */
   .secao {
     border: 1px solid var(--cinza-clr);
     border-radius: 4px;
@@ -150,7 +172,7 @@
   .secao__titulo {
     background: linear-gradient(135deg, var(--azul-med), var(--azul));
     color: #fff;
-    padding: 1.4mm 3mm;
+    padding: 1.4mm 3.2mm;
     font-size: 9.5pt; font-weight: 800;
     letter-spacing: .03em; text-transform: uppercase;
     display: flex; align-items: center; gap: 6px;
@@ -162,16 +184,28 @@
     font-size: 10px; font-weight: 900; flex-shrink: 0;
   }
   .secao__corpo {
-    padding: 2mm 3mm;
-    display: flex; flex-direction: column; gap: 1.6mm;
+    padding: var(--pad-secao);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-linha);
   }
 
-  .linha { display: flex; align-items: flex-end; gap: 4mm; flex-wrap: nowrap; }
+  /* ===== Linhas e campos ===== */
+  .linha {
+    display: flex;
+    align-items: flex-end;
+    gap: 4mm;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
   .linha.wrap { flex-wrap: wrap; }
 
   .campo {
-    display: flex; align-items: flex-end; gap: 4px;
-    min-width: 0; flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
   }
   .campo.f0 { flex: 0 0 auto; }
   .campo.f2 { flex: 2; }
@@ -182,7 +216,7 @@
   }
   .campo > input,
   .campo > select {
-    flex: 1; min-width: 40px; height: 15px;
+    flex: 1; min-width: 40px; height: 16px;
     border: 0; border-bottom: 1.2px dotted var(--cinza);
     background: transparent; font: inherit; font-weight: 700;
     font-size: 8.5pt; color: var(--preto);
@@ -191,13 +225,19 @@
   }
   .campo > input:focus,
   .campo > select:focus { border-bottom-color: var(--azul-med); }
-  .campo > input.curto { min-width: 22px; max-width: 30px; text-align: center; }
-  .campo > input.medio { min-width: 45px; max-width: 60px; }
+  .campo > input.curto { min-width: 24px; max-width: 32px; text-align: center; }
+  .campo > input.medio { min-width: 48px; max-width: 64px; }
 
-  .bloco { display: flex; flex-direction: column; gap: 1px; width: 100%; }
+  .bloco {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    width: 100%;
+  }
   .bloco > label { font-size: 8pt; font-weight: 700; color: var(--preto); }
   .bloco > input {
-    height: 15px; border: 0; border-bottom: 1.2px dotted var(--cinza);
+    height: 16px;
+    border: 0; border-bottom: 1.2px dotted var(--cinza);
     background: transparent; font: inherit; font-weight: 700;
     font-size: 8.5pt; color: var(--preto);
     padding: 0 2px; outline: none;
@@ -205,6 +245,7 @@
   }
   .bloco > input:focus { border-bottom-color: var(--azul-med); }
 
+  /* ===== Checkbox / radio ===== */
   .check {
     display: inline-flex; align-items: center; gap: 5px;
     font-size: 8pt; font-weight: 600; color: var(--preto);
@@ -225,100 +266,172 @@
   }
   .check input[type="radio"]:checked::after { border-radius: 50%; }
 
-  .checks { display: flex; flex-wrap: wrap; gap: 3mm 5mm; align-items: center; }
+  .checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3mm 5mm;
+    align-items: center;
+    width: 100%;
+  }
 
-  .tabela { width: 100%; border-collapse: collapse; font-size: 8pt; border-radius: 4px; overflow: hidden; }
+  /* ===== Tabela ===== */
+  .tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    border-radius: 4px;
+    overflow: hidden;
+  }
   .tabela thead th {
     background: linear-gradient(135deg, var(--azul-med), var(--azul));
-    color: #fff; font-size: 8pt; font-weight: 800;
-    text-align: left; padding: 1.4mm 2.5mm;
-    text-transform: uppercase; letter-spacing: .03em;
+    color: #fff;
+    font-size: 8pt;
+    font-weight: 800;
+    text-align: left;
+    padding: 1.6mm 2.8mm;
+    text-transform: uppercase;
+    letter-spacing: .03em;
   }
   .tabela tbody td {
-    padding: 0 2.5mm; border-bottom: 1px solid var(--cinza-clr);
-    height: 6.5mm; font-weight: 600; vertical-align: middle;
+    padding: 0 2.8mm;
+    border-bottom: 1px solid var(--cinza-clr);
+    height: 7mm;
+    font-weight: 600;
+    vertical-align: middle;
   }
   .tabela tbody tr:nth-child(even) { background: #f8fafc; }
   .tabela input {
-    width: 100%; height: 100%;
-    border: 0; background: transparent;
-    font: inherit; font-weight: 600; padding: 0;
-    outline: none; text-transform: uppercase;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-weight: 600;
+    padding: 0;
+    outline: none;
+    text-transform: uppercase;
   }
   .tabela input:focus { border-bottom: 1.2px dotted var(--azul-med); }
 
+  /* ===== Aviso ===== */
   .aviso {
-    padding: 1.4mm 2.5mm;
+    padding: 1.6mm 3mm;
     border-left: 3px solid #ca8a04;
     background: #fef9c3;
     color: #78350f;
-    font-size: 7.5pt; font-weight: 600; border-radius: 3px;
+    font-size: 7.5pt;
+    font-weight: 600;
+    border-radius: 3px;
+    margin-top: 1mm;
   }
 
+  /* ===== Termo ===== */
   .termo {
-    padding: 1.8mm 3mm;
+    padding: 2mm 3.2mm;
     border: 1px solid var(--cinza-clr);
     border-left: 3px solid var(--azul-med);
     border-radius: 4px;
     background: #eff6ff;
-    font-size: 7.5pt; line-height: 1.4; color: var(--cinza-esc);
+    font-size: 7.5pt;
+    line-height: 1.5;
+    color: var(--cinza-esc);
   }
   .termo strong { color: var(--azul); font-weight: 800; }
 
+  /* ===== Assinatura ===== */
   .assinatura {
     margin-top: auto;
-    display: flex; flex-direction: column; align-items: center;
-    gap: 2mm; padding-top: 4mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2mm;
+    padding-top: 4mm;
   }
   .assinatura__local {
-    display: flex; align-items: flex-end; gap: 5px;
-    font-size: 9pt; font-weight: 600; color: var(--preto);
-    flex-wrap: wrap; justify-content: center;
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--preto);
+    flex-wrap: wrap;
+    justify-content: center;
   }
   .assinatura__local input {
-    border: 0; border-bottom: 1.2px dotted var(--cinza);
-    background: transparent; font: inherit; font-weight: 700;
-    text-align: center; padding: 0 3px;
-    min-width: 22mm; height: 15px; outline: none;
+    border: 0;
+    border-bottom: 1.2px dotted var(--cinza);
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    text-align: center;
+    padding: 0 3px;
+    min-width: 22mm;
+    height: 16px;
+    outline: none;
   }
   .assinatura__local input.largo { min-width: 40mm; }
   .assinatura__local input:focus { border-bottom-color: var(--azul-med); }
 
-  .assinatura__linha { width: 90mm; height: 1px; background: var(--preto); margin-top: 4mm; }
+  .assinatura__linha {
+    width: 90mm;
+    height: 1px;
+    background: var(--preto);
+    margin-top: 4mm;
+  }
   .assinatura__nome {
-    font-size: 9pt; font-weight: 800;
-    letter-spacing: .06em; text-transform: uppercase; color: var(--preto);
+    font-size: 9pt;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--preto);
   }
 
+  /* ===== Toast ===== */
   .toast {
-    position: fixed; bottom: 24px; right: 24px;
-    padding: 14px 20px; border-radius: 10px;
-    background: #16a34a; color: #fff;
-    font-weight: 700; font-size: 14px;
+    position: fixed;
+    bottom: 24px; right: 24px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: #16a34a;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
     box-shadow: 0 12px 28px rgba(0,0,0,.2);
     z-index: 9999;
-    opacity: 0; transform: translateY(12px);
+    opacity: 0;
+    transform: translateY(12px);
     transition: opacity .3s, transform .3s;
     pointer-events: none;
   }
   .toast.show { opacity: 1; transform: none; }
   .toast.erro { background: #dc2626; }
 
+  /* ===== Loading ===== */
   .loading-overlay {
-    position: fixed; inset: 0; background: rgba(255,255,255,.7);
-    display: none; align-items: center; justify-content: center; z-index: 9998;
-    font-weight: 600; color: var(--azul);
+    position: fixed; inset: 0;
+    background: rgba(255,255,255,.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    font-weight: 600;
+    color: var(--azul);
   }
   .loading-overlay.show { display: flex; }
 
+  /* ===== Impressão ===== */
   @media print {
     @page { size: A4; margin: 0; }
     html, body { background: #fff; padding: 0; margin: 0; }
     .no-print { display: none !important; }
     .loading-overlay { display: none !important; }
     .folha {
-      width: 210mm; height: 297mm; margin: 0;
-      padding: 8mm 10mm; border-radius: 0; box-shadow: none;
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 8mm 10mm;
+      border-radius: 0;
+      box-shadow: none;
     }
     input, select, textarea { caret-color: transparent; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -449,7 +562,7 @@
         <div class="checks">
           <label class="check"><input type="checkbox" name="f_alergia" value="Não" /> Não</label>
           <label class="check"><input type="checkbox" name="f_alergia" value="Sim" /> Sim. Qual?</label>
-          <input id="f_alergia_desc" style="flex:1;min-width:80px;height:15px;border:0;border-bottom:1.2px dotted var(--cinza);background:transparent;font:inherit;font-weight:600;font-size:8pt;padding:0 2px;outline:none;text-transform:uppercase;" />
+          <input id="f_alergia_desc" style="flex:1;min-width:80px;height:16px;border:0;border-bottom:1.2px dotted var(--cinza);background:transparent;font:inherit;font-weight:600;font-size:8pt;padding:0 2px;outline:none;text-transform:uppercase;" />
         </div>
       </div>
     </div>
@@ -817,7 +930,6 @@ async function salvarFicha() {
 
     await DB.refresh('inscricoes');
 
-    // Redireciona se abriu pelo admin
     const fromAdmin = document.referrer && document.referrer.includes('admin.html');
     if (fromAdmin) {
       setTimeout(() => { window.location.href = 'admin.html'; }, 900);
@@ -827,7 +939,7 @@ async function salvarFicha() {
     }
   } catch (err) {
     console.error(err);
-    toast('Erro ao salvar inscrição.', true);
+    toast('Erro ao salvar inscrição: ' + (err.message || err), true);
     $('btnSalvar').disabled = false;
     showLoading(false);
   }
