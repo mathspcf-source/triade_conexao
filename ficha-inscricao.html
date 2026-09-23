@@ -21,8 +21,8 @@
     --cinza:     #64748b;
     --cinza-clr: #e2e8f0;
     --branco:    #ffffff;
-    --gap-linha: 2mm;
-    --pad-secao: 2.4mm 3.2mm;
+    --gap-secao: 2.4mm;
+    --pad-secao: 2.6mm 3.4mm;
   }
 
   html { -webkit-text-size-adjust: 100%; }
@@ -35,7 +35,7 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ===== Toolbar ===== */
+  /* ===== Toolbar (não imprime) ===== */
   .toolbar {
     max-width: 210mm;
     margin: 0 auto 14px;
@@ -78,14 +78,14 @@
     padding: 8mm 10mm;
     display: flex;
     flex-direction: column;
-    gap: 2.5mm;
+    gap: var(--gap-secao);
   }
 
   /* ===== Cabeçalho ===== */
   .cabecalho {
     border: 2px solid var(--azul-med);
     border-radius: 6px;
-    padding: 3mm 5mm;
+    padding: 3.5mm 5mm;
     text-align: center;
     background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
     position: relative;
@@ -102,15 +102,15 @@
   .cabecalho__titulo {
     font-size: 15pt; font-weight: 900; color: var(--azul);
     letter-spacing: .02em; text-transform: uppercase; line-height: 1.1;
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   }
   .cabecalho__subtitulo {
     font-size: 10pt; font-weight: 800; color: var(--laranja);
-    letter-spacing: .1em; text-transform: uppercase; margin-top: 1mm;
+    letter-spacing: .1em; text-transform: uppercase; margin-top: 1.4mm;
   }
   .cabecalho__contatos {
     display: flex; justify-content: center; align-items: center;
-    gap: 6mm; margin-top: 2mm;
+    gap: 8mm; margin-top: 2.4mm;
     font-size: 8pt; font-weight: 600; color: var(--preto); flex-wrap: wrap;
   }
   .cabecalho__contatos .item { display: inline-flex; align-items: center; gap: 4px; }
@@ -119,35 +119,35 @@
   /* ===== Título pill ===== */
   .titulo-ficha {
     align-self: center;
-    padding: 1.6mm 12mm;
+    padding: 1.8mm 14mm;
     border-radius: 999px;
     background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
     color: #fff;
     font-size: 11pt; font-weight: 900;
     letter-spacing: .16em; text-transform: uppercase;
     box-shadow: 0 3px 10px rgba(30,58,138,.25);
-    margin: 1mm 0;
   }
 
   /* ===== Barra Data / Nº ===== */
   .barra {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    align-items: center;
     gap: 4mm;
-    padding: 1.8mm 3.5mm;
+    padding: 2mm 3.5mm;
     background: var(--azul-clr);
     border: 1px solid #bfdbfe;
     border-radius: 4px;
     font-size: 9pt; font-weight: 700; color: var(--azul);
   }
   .barra .campo {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     min-width: 0;
   }
   .barra input {
-    flex: 1;
     border: 0;
     border-bottom: 1.2px dotted var(--cinza);
     background: transparent;
@@ -172,7 +172,7 @@
   .secao__titulo {
     background: linear-gradient(135deg, var(--azul-med), var(--azul));
     color: #fff;
-    padding: 1.4mm 3.2mm;
+    padding: 1.6mm 3.4mm;
     font-size: 9.5pt; font-weight: 800;
     letter-spacing: .03em; text-transform: uppercase;
     display: flex; align-items: center; gap: 6px;
@@ -187,36 +187,40 @@
     padding: var(--pad-secao);
     display: flex;
     flex-direction: column;
-    gap: var(--gap-linha);
+    gap: 2mm;
   }
 
   /* ===== Linhas e campos ===== */
   .linha {
-    display: flex;
-    align-items: flex-end;
+    display: grid;
+    grid-auto-flow: column;
+    align-items: end;
     gap: 4mm;
-    flex-wrap: nowrap;
     min-width: 0;
   }
-  .linha.wrap { flex-wrap: wrap; }
+  .linha.wrap {
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+  }
+  .linha.two { grid-template-columns: 1fr 1fr; grid-auto-flow: unset; }
 
   .campo {
-    display: flex;
-    align-items: flex-end;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: end;
     gap: 4px;
     min-width: 0;
-    flex: 1;
   }
-  .campo.f0 { flex: 0 0 auto; }
-  .campo.f2 { flex: 2; }
+  .campo.f0 { grid-template-columns: auto auto; }
+  .campo.f2 { grid-column: span 2; }
 
   .campo > label {
     font-size: 8pt; font-weight: 700; color: var(--preto);
-    white-space: nowrap; flex-shrink: 0;
+    white-space: nowrap;
   }
   .campo > input,
   .campo > select {
-    flex: 1; min-width: 40px; height: 16px;
+    min-width: 40px; height: 16px;
     border: 0; border-bottom: 1.2px dotted var(--cinza);
     background: transparent; font: inherit; font-weight: 700;
     font-size: 8.5pt; color: var(--preto);
@@ -225,14 +229,31 @@
   }
   .campo > input:focus,
   .campo > select:focus { border-bottom-color: var(--azul-med); }
-  .campo > input.curto { min-width: 24px; max-width: 32px; text-align: center; }
-  .campo > input.medio { min-width: 48px; max-width: 64px; }
 
+  /* Data de nascimento: dd/mm/aaaa */
+  .data-nasc {
+    display: grid;
+    grid-template-columns: auto 24px auto 24px auto 44px;
+    align-items: end;
+    gap: 3px;
+  }
+  .data-nasc input {
+    height: 16px;
+    border: 0; border-bottom: 1.2px dotted var(--cinza);
+    background: transparent; font: inherit; font-weight: 700;
+    font-size: 8.5pt; color: var(--preto);
+    text-align: center; padding: 0;
+    outline: none;
+  }
+  .data-nasc input:focus { border-bottom-color: var(--azul-med); }
+
+  /* Bloco (label em cima, input embaixo) */
   .bloco {
     display: flex;
     flex-direction: column;
     gap: 1px;
     width: 100%;
+    min-width: 0;
   }
   .bloco > label { font-size: 8pt; font-weight: 700; color: var(--preto); }
   .bloco > input {
@@ -242,6 +263,7 @@
     font-size: 8.5pt; color: var(--preto);
     padding: 0 2px; outline: none;
     text-transform: uppercase;
+    min-width: 0;
   }
   .bloco > input:focus { border-bottom-color: var(--azul-med); }
 
@@ -269,9 +291,24 @@
   .checks {
     display: flex;
     flex-wrap: wrap;
-    gap: 3mm 5mm;
+    gap: 2.5mm 5mm;
     align-items: center;
     width: 100%;
+  }
+
+  /* Linha mista: label + checks */
+  .linha-checks {
+    display: flex;
+    align-items: center;
+    gap: 4mm;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .linha-checks > label {
+    font-size: 8pt;
+    font-weight: 700;
+    color: var(--preto);
+    white-space: nowrap;
   }
 
   /* ===== Tabela ===== */
@@ -281,6 +318,7 @@
     font-size: 8pt;
     border-radius: 4px;
     overflow: hidden;
+    table-layout: fixed;
   }
   .tabela thead th {
     background: linear-gradient(135deg, var(--azul-med), var(--azul));
@@ -327,7 +365,7 @@
 
   /* ===== Termo ===== */
   .termo {
-    padding: 2mm 3.2mm;
+    padding: 2mm 3.4mm;
     border: 1px solid var(--cinza-clr);
     border-left: 3px solid var(--azul-med);
     border-radius: 4px;
@@ -508,9 +546,16 @@
 
   <div class="titulo-ficha">Ficha de Inscrição</div>
 
+  <!-- Barra Data / Nº -->
   <div class="barra">
-    <span class="campo">Data da Inscrição: <input type="text" id="f_data" /></span>
-    <span class="campo">Matrícula Nº: <input type="text" id="f_numero" readonly /></span>
+    <div class="campo">
+      <label>Data da Inscrição:</label>
+      <input type="text" id="f_data" />
+    </div>
+    <div class="campo">
+      <label>Matrícula Nº:</label>
+      <input type="text" id="f_numero" readonly />
+    </div>
   </div>
 
   <!-- 1. Dados do Aluno -->
@@ -521,48 +566,58 @@
         <label>Nome Completo:</label>
         <input id="f_nome" />
       </div>
-      <div class="linha">
-        <div class="campo f2">
+
+      <div class="linha two">
+        <div class="campo">
           <label>Data de Nascimento:</label>
-          <input class="curto" id="f_dia" maxlength="2" />
-          <label>/</label>
-          <input class="curto" id="f_mes" maxlength="2" />
-          <label>/</label>
-          <input class="medio" id="f_ano" maxlength="4" />
-        </div>
-        <div class="campo f0">
-          <label>Idade:</label>
-          <input class="curto" id="f_idade" maxlength="2" />
-          <label>anos</label>
-        </div>
-        <div class="campo f0">
-          <label>Turno Escolar:</label>
-          <div class="checks">
-            <label class="check"><input type="checkbox" name="f_turno_escolar" value="Manhã" /> Manhã</label>
-            <label class="check"><input type="checkbox" name="f_turno_escolar" value="Tarde" /> Tarde</label>
+          <div class="data-nasc">
+            <input id="f_dia" maxlength="2" placeholder="dd" />
+            <span style="padding-bottom:2px;">/</span>
+            <input id="f_mes" maxlength="2" placeholder="mm" />
+            <span style="padding-bottom:2px;">/</span>
+            <input id="f_ano" maxlength="4" placeholder="aaaa" />
           </div>
         </div>
+        <div class="campo">
+          <label>Idade:</label>
+          <input id="f_idade" maxlength="2" style="max-width:60px;" />
+          <label style="padding-left:4px;">anos</label>
+        </div>
       </div>
-      <div class="linha">
-        <div class="campo"><label>Escola onde estuda:</label><input id="f_escola" /></div>
+
+      <div class="linha-checks">
+        <label>Turno Escolar:</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="f_turno_escolar" value="Manhã" /> Manhã</label>
+          <label class="check"><input type="checkbox" name="f_turno_escolar" value="Tarde" /> Tarde</label>
+        </div>
       </div>
-      <div class="linha">
-        <div class="campo"><label>Série / Ano:</label><input id="f_serie" /></div>
+
+      <div class="bloco">
+        <label>Escola onde estuda:</label>
+        <input id="f_escola" />
       </div>
-      <div class="linha wrap">
-        <label style="font-size:8pt;font-weight:700;color:var(--preto);white-space:nowrap;">Nível Escolar:</label>
+
+      <div class="bloco">
+        <label>Série / Ano:</label>
+        <input id="f_serie" />
+      </div>
+
+      <div class="linha-checks">
+        <label>Nível Escolar:</label>
         <div class="checks">
           <label class="check"><input type="checkbox" name="f_nivel" value="Anos Iniciais" /> Anos Iniciais (1º ao 5º ano)</label>
           <label class="check"><input type="checkbox" name="f_nivel" value="Anos Finais" /> Anos Finais (6º ao 9º ano)</label>
           <label class="check"><input type="checkbox" name="f_nivel" value="Ensino Médio" /> Ensino Médio</label>
         </div>
       </div>
-      <div class="linha wrap">
-        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Possui alguma alergia, condição médica ou necessidade específica?</label>
+
+      <div class="linha-checks">
+        <label>Possui alguma alergia, condição médica ou necessidade específica?</label>
         <div class="checks">
           <label class="check"><input type="checkbox" name="f_alergia" value="Não" /> Não</label>
           <label class="check"><input type="checkbox" name="f_alergia" value="Sim" /> Sim. Qual?</label>
-          <input id="f_alergia_desc" style="flex:1;min-width:80px;height:16px;border:0;border-bottom:1.2px dotted var(--cinza);background:transparent;font:inherit;font-weight:600;font-size:8pt;padding:0 2px;outline:none;text-transform:uppercase;" />
+          <input id="f_alergia_desc" style="flex:1;min-width:100px;height:16px;border:0;border-bottom:1.2px dotted var(--cinza);background:transparent;font:inherit;font-weight:600;font-size:8pt;padding:0 2px;outline:none;text-transform:uppercase;" />
         </div>
       </div>
     </div>
@@ -576,8 +631,9 @@
         <label>Nome do Responsável:</label>
         <input id="f_responsavel" />
       </div>
-      <div class="linha wrap">
-        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Grau de Parentesco:</label>
+
+      <div class="linha-checks">
+        <label>Grau de Parentesco:</label>
         <div class="checks">
           <label class="check"><input type="radio" name="f_parentesco" value="Mãe" /> Mãe</label>
           <label class="check"><input type="radio" name="f_parentesco" value="Pai" /> Pai</label>
@@ -585,20 +641,31 @@
           <label class="check"><input type="radio" name="f_parentesco" value="Outro" /> Outro</label>
         </div>
       </div>
-      <div class="linha">
-        <div class="campo"><label>CPF:</label><input id="f_cpf" /></div>
-        <div class="campo"><label>RG:</label><input id="f_rg" /></div>
-      </div>
-      <div class="linha">
+
+      <div class="linha two">
         <div class="campo">
-          <label>WhatsApp Principal:</label><label>(79)</label>
+          <label>CPF:</label>
+          <input id="f_cpf" />
+        </div>
+        <div class="campo">
+          <label>RG:</label>
+          <input id="f_rg" />
+        </div>
+      </div>
+
+      <div class="linha two">
+        <div class="campo">
+          <label>WhatsApp Principal:</label>
+          <label style="padding:0 4px;">(79)</label>
           <input id="f_whatsapp" />
         </div>
         <div class="campo">
-          <label>Contato Emergência:</label><label>(79)</label>
+          <label>Contato Emergência:</label>
+          <label style="padding:0 4px;">(79)</label>
           <input id="f_emergencia" />
         </div>
       </div>
+
       <div class="bloco">
         <label>Endereço Residencial:</label>
         <input id="f_endereco" />
@@ -610,16 +677,17 @@
   <section class="secao">
     <div class="secao__titulo"><span class="num">3</span> Plano e Modalidade no Reforço Escolar</div>
     <div class="secao__corpo">
-      <div class="linha wrap">
-        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Turno no Reforço:</label>
+      <div class="linha-checks">
+        <label>Turno no Reforço:</label>
         <div class="checks">
           <label class="check"><input type="checkbox" name="f_turno_reforco" value="Manhã" /> Manhã</label>
           <label class="check"><input type="checkbox" name="f_turno_reforco" value="Tarde" /> Tarde</label>
           <label class="check"><input type="checkbox" name="f_turno_reforco" value="Noite (especial)" /> Noite (casos extremos)</label>
         </div>
       </div>
-      <div class="linha wrap">
-        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Dias da Semana:</label>
+
+      <div class="linha-checks">
+        <label>Dias da Semana:</label>
         <div class="checks">
           <label class="check"><input type="checkbox" name="f_dias" value="Segunda" /> Segunda</label>
           <label class="check"><input type="checkbox" name="f_dias" value="Terça" /> Terça</label>
@@ -628,8 +696,9 @@
           <label class="check"><input type="checkbox" name="f_dias" value="Sexta" /> Sexta</label>
         </div>
       </div>
-      <div class="linha wrap">
-        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Serviços Contratados:</label>
+
+      <div class="linha-checks">
+        <label>Serviços Contratados:</label>
         <div class="checks">
           <label class="check"><input type="checkbox" name="f_servicos" value="Tarefas de Casa" /> Acompanhamento de Tarefas de Casa</label>
           <label class="check"><input type="checkbox" name="f_servicos" value="Alfabetização" /> Alfabetização / Letramento</label>
@@ -646,7 +715,11 @@
     <div class="secao__corpo">
       <table class="tabela">
         <thead>
-          <tr><th>Categoria / Nível Escolar</th><th>Frequência</th><th>Mensalidade</th></tr>
+          <tr>
+            <th style="width:50%;">Categoria / Nível Escolar</th>
+            <th style="width:25%;">Frequência</th>
+            <th style="width:25%;">Mensalidade</th>
+          </tr>
         </thead>
         <tbody>
           <tr>
@@ -666,20 +739,23 @@
           </tr>
         </tbody>
       </table>
+
       <div class="aviso"><strong>Desconto Irmãos:</strong> 10% de desconto na mensalidade do segundo filho.</div>
-      <div class="linha">
-        <div class="campo">
-          <label>Dia de Vencimento:</label>
-          <input class="medio" id="f_vencimento" maxlength="2" />
-          <label>de cada mês.</label>
+
+      <div class="linha-checks">
+        <div class="campo" style="max-width:120px;">
+          <label>Vencimento:</label>
+          <input id="f_vencimento" maxlength="2" placeholder="dd" />
+          <label style="padding-left:4px;">de cada mês</label>
         </div>
-        <div class="campo f0">
-          <label>Forma de Pagamento:</label>
-          <div class="checks">
-            <label class="check"><input type="checkbox" name="f_forma" value="PIX" /> PIX</label>
-            <label class="check"><input type="checkbox" name="f_forma" value="Dinheiro" /> Dinheiro</label>
-            <label class="check"><input type="checkbox" name="f_forma" value="Cartão" /> Cartão</label>
-          </div>
+      </div>
+
+      <div class="linha-checks">
+        <label>Forma de Pagamento:</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="f_forma" value="PIX" /> PIX</label>
+          <label class="check"><input type="checkbox" name="f_forma" value="Dinheiro" /> Dinheiro</label>
+          <label class="check"><input type="checkbox" name="f_forma" value="Cartão" /> Cartão</label>
         </div>
       </div>
     </div>
@@ -692,18 +768,33 @@
       <div class="bloco">
         <label>Pessoas autorizadas a buscar o aluno além do responsável:</label>
       </div>
-      <div class="linha">
-        <div class="campo"><label>1. Nome:</label><input id="f_aut1" /></div>
-        <div class="campo f0"><label>Parentesco:</label><input class="medio" id="f_aut1_parentesco" /></div>
+
+      <div class="linha two">
+        <div class="campo">
+          <label>1. Nome:</label>
+          <input id="f_aut1" />
+        </div>
+        <div class="campo">
+          <label>Parentesco:</label>
+          <input id="f_aut1_parentesco" />
+        </div>
       </div>
-      <div class="linha">
-        <div class="campo"><label>2. Nome:</label><input id="f_aut2" /></div>
-        <div class="campo f0"><label>Parentesco:</label><input class="medio" id="f_aut2_parentesco" /></div>
+
+      <div class="linha two">
+        <div class="campo">
+          <label>2. Nome:</label>
+          <input id="f_aut2" />
+        </div>
+        <div class="campo">
+          <label>Parentesco:</label>
+          <input id="f_aut2_parentesco" />
+        </div>
       </div>
-      <div class="linha wrap">
-        <label style="font-size:8pt;font-weight:700;color:var(--preto);">Uso de Imagem:</label>
+
+      <div class="linha-checks">
+        <label>Uso de Imagem:</label>
         <div class="checks">
-          <span style="font-size:8pt;font-weight:600;">Autorizo o uso de fotos/vídeos em atividades pedagógicas para divulgação?</span>
+          <span style="font-size:8pt;font-weight:600;">Autorizo o uso de fotos/vídeos em atividades pedagógicas?</span>
           <label class="check"><input type="radio" name="f_imagem" value="SIM" /> SIM</label>
           <label class="check"><input type="radio" name="f_imagem" value="NÃO" /> NÃO</label>
         </div>
@@ -725,9 +816,9 @@
   <div class="assinatura">
     <div class="assinatura__local">
       <span>Nossa Senhora do Socorro / SE,</span>
-      <input id="f_assin_dia" maxlength="2" />
+      <input id="f_assin_dia" maxlength="2" placeholder="dd" />
       <span>de</span>
-      <input id="f_assin_mes" class="largo" />
+      <input id="f_assin_mes" class="largo" placeholder="mês" />
       <span>de 2026.</span>
     </div>
     <div class="assinatura__linha"></div>
@@ -744,9 +835,6 @@
 <script>
 /* ============================================================
    FICHA DE INSCRIÇÃO — Supabase
-   Modos:
-   - sem parâmetro  → nova inscrição (público, RLS permite INSERT)
-   - com ?id=xxx    → editar inscrição existente
    ============================================================ */
 
 let inscricaoAtual = null;
@@ -802,12 +890,12 @@ function marcarCheckboxes(name, valores) {
   });
 }
 
-/* ---------- Coleta dados do formulário ---------- */
+/* ---------- Coleta dados ---------- */
 function coletarDados() {
-  const dia = $('f_dia').value.trim().padStart(2, '0');
-  const mes = $('f_mes').value.trim().padStart(2, '0');
-  const ano = $('f_ano').value.trim();
-  const nascimento = (ano && mes && dia) ? `${ano}-${mes}-${dia}` : null;
+  const dia = ($('f_dia').value || '').trim().padStart(2, '0');
+  const mes = ($('f_mes').value || '').trim().padStart(2, '0');
+  const ano = ($('f_ano').value || '').trim();
+  const nascimento = (ano && mes && dia && dia !== '00' && mes !== '00') ? `${ano}-${mes}-${dia}` : null;
 
   return {
     numero: $('f_numero').value.trim(),
@@ -939,7 +1027,7 @@ async function salvarFicha() {
     }
   } catch (err) {
     console.error(err);
-    toast('Erro ao salvar inscrição: ' + (err.message || err), true);
+    toast('Erro ao salvar inscrição.', true);
     $('btnSalvar').disabled = false;
     showLoading(false);
   }
