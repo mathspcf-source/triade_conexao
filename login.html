@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tríade Conexão — Entrar</title>
+<link rel="stylesheet" href="shared.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+</head>
+<body>
+
+<div class="login-page">
+
+  <!-- ================= COLUNA ESQUERDA ================= -->
+  <div class="login-left">
+    <div class="brand">
+      <div class="brand-logo" style="width:48px;height:48px;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <strong style="font-size:17px;">Tríade Conexão</strong>
+        <span>Reforço Escolar</span>
+      </div>
+    </div>
+
+    <h1>Educação que <span>conecta</span> alunos, professores e famílias.</h1>
+    <p>Plataforma completa de reforço escolar: gestão de turmas, acompanhamento de desempenho, boletins digitais e comunicação integrada.</p>
+
+    <ul class="features">
+      <li>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Gestão completa de turmas, alunos e professores
+      </li>
+      <li>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Boletins e relatórios de desempenho em tempo real
+      </li>
+      <li>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Mural de avisos para alunos, pais e docentes
+      </li>
+      <li>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Financeiro integrado com confirmação de pagamentos
+      </li>
+    </ul>
+  </div>
+
+  <!-- ================= COLUNA DIREITA ================= -->
+  <div class="login-right">
+    <form class="login-card" id="loginForm" onsubmit="fazerLogin(event)">
+      <h2>Bem-vindo de volta</h2>
+      <p class="sub">Entre com sua matrícula para acessar o painel.</p>
+
+      <div class="login-field">
+        <label for="matricula">Matrícula</label>
+        <input
+          type="text"
+          id="matricula"
+          required
+          inputmode="numeric"
+          maxlength="8"
+          pattern="\d{8}"
+          placeholder="00000000"
+          autocomplete="username"
+          autofocus
+        />
+        <small style="display:block;font-size:11.5px;color:var(--cinza-500);margin-top:4px;">
+          8 dígitos. Ex.: 20260001
+        </small>
+      </div>
+
+      <div class="login-field">
+        <label for="senha">Senha</label>
+        <input
+          type="password"
+          id="senha"
+          required
+          placeholder="Digite sua senha"
+          autocomplete="current-password"
+        />
+      </div>
+
+      <div id="erroLogin" style="display:none;padding:10px 12px;background:var(--vermelho-100);color:var(--vermelho-600);border-radius:8px;font-size:12.5px;font-weight:600;margin-bottom:12px;"></div>
+
+      <button type="submit" class="login-btn" id="btnEntrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        Entrar na plataforma
+      </button>
+
+      <div class="login-hint">
+        <strong>Não sabe sua matrícula?</strong>
+        Fale com a secretaria da escola.
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script src="db.js"></script>
+<script src="shared.js"></script>
+<script>
+/* ============================================================
+   LOGIN POR MATRÍCULA
+   ============================================================ */
+
+const inputMatricula = document.getElementById('matricula');
+const erroEl = document.getElementById('erroLogin');
+const btnEntrar = document.getElementById('btnEntrar');
+
+/* ---------- Só dígitos na matrícula ---------- */
+inputMatricula.addEventListener('input', () => {
+  inputMatricula.value = inputMatricula.value.replace(/\D/g, '').slice(0, 8);
+});
+
+/* ---------- Helpers ---------- */
+function mostrarErro(msg) {
+  erroEl.textContent = msg;
+  erroEl.style.display = 'block';
+}
+
+function esconderErro() {
+  erroEl.style.display = 'none';
+}
+
+/* ---------- Login ---------- */
+async function fazerLogin(e) {
+  e.preventDefault();
+  esconderErro();
+
+  const matricula = inputMatricula.value.trim();
+  const senha = document.getElementById('senha').value;
+
+  if (matricula.length !== 8) {
+    mostrarErro('A matrícula deve ter exatamente 8 dígitos.');
+    inputMatricula.focus();
+    return;
+  }
+
+  if (!senha) {
+    mostrarErro('Informe sua senha.');
+    document.getElementById('senha').focus();
+    return;
+  }
+
+  btnEntrar.disabled = true;
+  btnEntrar.style.opacity = '0.7';
+
+  try {
+    const res = await Auth.login(matricula, senha);
+
+    if (!res.ok) {
+      mostrarErro(res.erro);
+      btnEntrar.disabled = false;
+      btnEntrar.style.opacity = '1';
+      return;
+    }
+
+    await DB.sync();
+
+    const rota = ROTAS[res.usuario.papel];
+    if (!rota) {
+      mostrarErro('Papel de usuário inválido.');
+      btnEntrar.disabled = false;
+      btnEntrar.style.opacity = '1';
+      return;
+    }
+
+    window.location.href = rota;
+
+  } catch (err) {
+    console.error(err);
+    mostrarErro('Erro ao conectar. Verifique sua internet.');
+    btnEntrar.disabled = false;
+    btnEntrar.style.opacity = '1';
+  }
+}
+
+/* ---------- Boot ---------- */
+(async () => {
+  // Se já tem sessão ativa, redireciona direto
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    const u = Auth.atual();
+    if (u && ROTAS[u.papel]) {
+      window.location.href = ROTAS[u.papel];
+      return;
+    }
+  }
+
+  inputMatricula.focus();
+})();
+</script>
+
+</body>
+</html>
