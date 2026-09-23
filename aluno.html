@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tríade Conexão — Aluno</title>
+<link rel="stylesheet" href="shared.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg></div>
+      <div class="brand-text"><strong>Tríade Conexão</strong><span>Painel Aluno</span></div>
+    </div>
+
+    <div class="nav-title">Principal</div>
+    <div class="nav-item active" data-tab="visao"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span>Visão Geral</span></div>
+    <div class="nav-item" data-tab="turmas"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Minhas Turmas</span></div>
+    <div class="nav-item" data-tab="atividades"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Atividades</span></div>
+    <div class="nav-item" data-tab="boletim"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/></svg><span>Boletim</span></div>
+    <div class="nav-item" data-tab="faltas"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg><span>Faltas</span></div>
+    <div class="nav-item" data-tab="desempenho"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Desempenho</span></div>
+    <div class="nav-item" data-tab="relatorios"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Relatórios</span></div>
+    <div class="nav-item" data-tab="mural"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg><span>Mural de Avisos</span></div>
+
+    <div class="nav-title">Conta</div>
+    <div class="nav-item" data-tab="perfil"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Perfil</span></div>
+    <div class="nav-item" onclick="logout()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Sair</span></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="page-title"><h1 id="pageTitle">Visão Geral</h1><p id="pageSub">Suas aulas e atividades</p></div>
+      <div class="user-chip" data-tab="perfil">
+        <div class="avatar" id="chipAvatar">AL</div>
+        <div class="info"><strong>Aluno</strong><span>Matrícula —</span></div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- VISÃO GERAL -->
+      <section class="tab active" id="tab-visao">
+        <div class="grid grid-4" style="margin-bottom:16px;">
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div><div><div class="val" id="kpiPend">0</div><div class="lbl">Atividades pendentes</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="val" id="kpiMedia">0,0</div><div class="lbl">Média geral</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg></div><div><div class="val" id="kpiFreq">0%</div><div class="lbl">Frequência</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg></div><div><div class="val" id="kpiTurmas">0</div><div class="lbl">Turmas</div></div></div>
+        </div>
+        <div class="grid grid-2">
+          <div class="card floating">
+            <div class="card-title">Atividades em aberto</div>
+            <div class="card-sub">Pendentes de entrega</div>
+            <div id="visaoAtiv"></div>
+          </div>
+          <div class="card floating">
+            <div class="card-title">Avisos</div>
+            <div class="card-sub">Comunicados para você</div>
+            <div id="visaoAvisos"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MINHAS TURMAS -->
+      <section class="tab" id="tab-turmas">
+        <div class="sec-header"><div><h2>Minhas Turmas</h2><p>Turmas em que você está matriculado</p></div></div>
+        <div class="grid grid-2" id="listaMinhasTurmas"></div>
+      </section>
+
+      <!-- ATIVIDADES -->
+      <section class="tab" id="tab-atividades">
+        <div class="sec-header"><div><h2>Atividades</h2><p>Atividades designadas a você</p></div></div>
+        <div class="table-wrap"><table id="tabAtivAluno">
+          <thead><tr><th>Atividade</th><th>Disciplina</th><th>Prazo</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </section>
+
+      <!-- BOLETIM -->
+      <section class="tab" id="tab-boletim">
+        <div class="sec-header">
+          <div><h2>Boletim</h2><p>Suas notas por matéria</p></div>
+          <div class="actions">
+            <select id="selBimAluno" style="padding:10px 12px;border:1px solid var(--cinza-200);border-radius:8px;font-size:13px;">
+              <option value="1">1º Bimestre</option><option value="2">2º Bimestre</option><option value="3">3º Bimestre</option><option value="4">4º Bimestre</option>
+            </select>
+          </div>
+        </div>
+        <div class="card floating">
+          <div class="card-title">Notas do bimestre</div>
+          <div class="card-sub">Média mínima 6,0</div>
+          <div class="table-wrap"><table id="tabelaBolAluno"><thead></thead><tbody></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- FALTAS -->
+      <section class="tab" id="tab-faltas">
+        <div class="sec-header"><div><h2>Faltas</h2><p>Seu registro de presença</p></div></div>
+        <div class="grid grid-3" style="margin-bottom:16px;">
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="val" id="kpiPres">0</div><div class="lbl">Presenças</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><div><div class="val" id="kpiFalt">0</div><div class="lbl">Faltas</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="val" id="kpiFreq2">0%</div><div class="lbl">Frequência</div></div></div>
+        </div>
+        <div class="table-wrap"><table id="tabFaltasAluno">
+          <thead><tr><th>Data</th><th>Disciplina</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </section>
+
+      <!-- DESEMPENHO -->
+      <section class="tab" id="tab-desempenho">
+        <div class="sec-header"><div><h2>Desempenho</h2><p>Sua evolução</p></div></div>
+        <div class="card floating">
+          <div class="card-title">Evolução por disciplina</div>
+          <div class="card-sub">Média do bimestre atual</div>
+          <div id="desempenhoAluno" class="donut-grid"></div>
+        </div>
+      </section>
+
+      <!-- RELATÓRIOS -->
+      <section class="tab" id="tab-relatorios">
+        <div class="sec-header"><div><h2>Relatórios</h2><p>Relatórios emitidos pelos professores</p></div></div>
+        <div class="grid grid-2" id="listaRelAluno"></div>
+      </section>
+
+      <!-- MURAL -->
+      <section class="tab" id="tab-mural">
+        <div class="sec-header"><div><h2>Mural de Avisos</h2><p>Comunicados para você</p></div></div>
+        <div id="listaMuralAluno"></div>
+      </section>
+
+      <!-- PERFIL -->
+      <section class="tab" id="tab-perfil">
+        <div class="perfil-header">
+          <div class="perfil-photo">
+            <span id="perfilInitials" style="font-size:28px;font-weight:700;">AL</span>
+            <img id="perfilImg" alt="" style="display:none;" />
+            <label class="upload" for="perfilFile">Alterar</label>
+            <input type="file" id="perfilFile" accept="image/*" hidden />
+          </div>
+          <div class="perfil-info"><h2 id="perfilNome">Aluno</h2><p id="perfilEmail">Matrícula —</p></div>
+        </div>
+        <div class="card floating">
+          <div class="card-title">Dados do perfil</div>
+          <div class="card-sub">Suas informações pessoais.</div>
+          <form class="form-grid" onsubmit="salvarPerfil(event)">
+            <div class="field"><label>Matrícula</label><input id="pMatricula" readonly /></div>
+            <div class="field"><label>Nome</label><input id="pNome" /></div>
+            <div class="field"><label>Turma</label><input id="pTurma" readonly /></div>
+            <div class="field"><label>Responsável</label><input id="pResp" readonly /></div>
+            <div class="field"><label>Celular do responsável</label><input id="pTel" type="tel" /></div>
+            <div class="field full">
+              <label>Nova senha <span class="hint">(deixe em branco para não alterar)</span></label>
+              <input id="pNovaSenha" type="password" minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+            </div>
+            <div class="form-actions"><button type="reset" class="btn btn-ghost">Cancelar</button><button type="submit" class="btn btn-primary">Salvar alterações</button></div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL: RESPONDER ATIVIDADE ============ -->
+<div class="modal-backdrop" id="modalResponder" onclick="if(event.target===this) fecharModalResponder()">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header">
+      <div>
+        <h3 id="respTituloAtiv">Responder atividade</h3>
+        <p id="respSubAtiv"></p>
+      </div>
+      <button class="modal-close" onclick="fecharModalResponder()" aria-label="Fechar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="respBodyAtiv"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModalResponder()">Cancelar</button>
+      <button class="btn btn-primary" onclick="enviarRespostas()">Enviar respostas</button>
+    </div>
+  </div>
+</div>
+
+<script src="db.js"></script>
+<script src="shared.js"></script>
+<script>
+/* ============================================================
+   ALUNO — lógica
+   ============================================================ */
+
+let user = null;
+let atividadeAtual = null;
+
+const DISCIPLINAS_FUND = ['Português','Matemática','Ciências','História','Geografia','Inglês','Artes','Ed. Física'];
+const DISCIPLINAS_MEDIO = ['Português','Matemática','Física','Química','Biologia','História','Geografia','Filosofia','Sociologia','Inglês'];
+
+/* ---------- Localização do aluno ---------- */
+function meuRegistro() {
+  const alunos = DB.list('alunos');
+  if (!alunos.length) return null;
+
+  let reg = alunos.find(a => a.nome === user.nome);
+  if (reg) return reg;
+
+  if (user.matricula) {
+    reg = alunos.find(a => a.matricula === user.matricula);
+    if (reg) return reg;
+  }
+
+  if (user.turma) {
+    reg = alunos.find(a => a.turma === user.turma);
+    if (reg) return reg;
+  }
+  return null;
+}
+
+function minhaTurma() {
+  const r = meuRegistro();
+  return r ? r.turma : (user.turma || '');
+}
+
+function disciplinasDaMinhaTurma() {
+  const turmaNome = minhaTurma();
+  if (!turmaNome) return DISCIPLINAS_FUND;
+  const t = DB.list('turmas').find(x => x.nome === turmaNome);
+  if (!t) return DISCIPLINAS_FUND;
+  return t.nivel === 'medio' ? DISCIPLINAS_MEDIO : DISCIPLINAS_FUND;
+}
+
+/* ============================================================
+   VISÃO GERAL
+   ============================================================ */
+function atividadesDoAluno() {
+  const turma = minhaTurma();
+  if (!turma) return [];
+  return DB.list('atividades').filter(a => a.turma === turma);
+}
+
+function renderVisao() {
+  const turma = minhaTurma();
+  const atividades = atividadesDoAluno();
+  const entregues = atividades.filter(a => (a.entregas || []).some(e => e.aluno === user.nome));
+  const pendentes = atividades.length - entregues.length;
+
+  const notaMedia = calcularMediaAluno(user.nome, turma, 1);
+  const freq = calcularFrequencia(user.nome, turma);
+
+  document.getElementById('kpiPend').textContent = pendentes;
+  document.getElementById('kpiMedia').textContent = notaMedia.toFixed(1).replace('.', ',');
+  document.getElementById('kpiFreq').textContent = freq + '%';
+  document.getElementById('kpiTurmas').textContent = turma ? 1 : 0;
+
+  const elAtiv = document.getElementById('visaoAtiv');
+  const abertas = atividades.filter(a =>
+    !(a.entregas || []).some(e => e.aluno === user.nome)
+  );
+  elAtiv.innerHTML = abertas.length
+    ? abertas.map(a => `
+      <div class="aviso">
+        <div class="meta"><span class="badge badge-warn">Pendente</span> Prazo: ${fmtData(a.prazo)}</div>
+        <h4>${a.titulo}</h4>
+        <p>${a.disciplina}${a.descricao ? ' — ' + a.descricao : ''}</p>
+      </div>
+    `).join('')
+    : '<p style="font-size:13px;color:var(--cinza-500);">Nenhuma atividade pendente.</p>';
+
+  const elAvisos = document.getElementById('visaoAvisos');
+  const avisos = DB.list('avisos')
+    .filter(a => a.publico === 'Todos' || a.publico === 'Alunos')
+    .slice().sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')))
+    .slice(0, 3);
+  const corBadge = { 'Alunos': 'badge-info', 'Professores': 'badge-warn', 'Pais': 'badge-bad', 'Todos': 'badge-info' };
+  elAvisos.innerHTML = avisos.length
+    ? avisos.map(a => `
+      <div class="aviso">
+        <div class="meta"><span class="badge ${corBadge[a.publico] || 'badge-info'}">${a.publico}</span> ${fmtData(a.data)}</div>
+        <h4>${a.titulo}</h4>
+        <p>${a.mensagem}</p>
+      </div>
+    `).join('')
+    : '<p style="font-size:13px;color:var(--cinza-500);">Sem avisos.</p>';
+}
+
+/* ============================================================
+   MINHAS TURMAS
+   ============================================================ */
+function renderMinhasTurmas() {
+  const turma = minhaTurma();
+  const cont = document.getElementById('listaMinhasTurmas');
+  if (!cont) return;
+
+  if (!turma) {
+    cont.innerHTML = '<div class="placeholder" style="grid-column:1/-1;"><h3>Sem turma vinculada</h3><p>Você ainda não está vinculado a uma turma. Fale com a administração.</p></div>';
+    return;
+  }
+
+  const t = DB.list('turmas').find(x => x.nome === turma);
+  if (!t) {
+    cont.innerHTML = '<div class="placeholder" style="grid-column:1/-1;"><h3>Turma não encontrada</h3><p>O cadastro da sua turma não foi localizado.</p></div>';
+    return;
+  }
+
+  const m = calcularMediaAluno(user.nome, turma, 1);
+  const freq = calcularFrequencia(user.nome, turma);
+
+  cont.innerHTML = `
+    <div class="card floating">
+      <div class="card-title">${t.nome}</div>
+      <div class="card-sub">${t.professor || '—'} · ${t.turno || '—'}</div>
+      <div class="donut-item" style="padding:6px 0;border:none;">
+        ${donutSVG(notaParaPct(m), corPorNota(m), m.toFixed(1).replace('.', ','))}
+        <div class="donut-info">
+          <div class="nome">Sua média</div>
+          <div class="valor">${m >= 6 ? 'Aprovado' : 'Abaixo da média'}</div>
+        </div>
+      </div>
+      <div class="donut-item" style="padding:6px 0;border:none;border-top:1px solid var(--cinza-200);margin-top:6px;">
+        ${donutSVG(freq, corPorPct(freq))}
+        <div class="donut-info">
+          <div class="nome">Frequência</div>
+          <div class="valor">${freq >= 75 ? 'Regular' : 'Atenção'}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   ATIVIDADES
+   ============================================================ */
+function renderAtividades() {
+  const tbody = document.querySelector('#tabAtivAluno tbody');
+  if (!tbody) return;
+
+  const atividades = atividadesDoAluno();
+  if (!atividades.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhuma atividade designada.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = atividades.map(a => {
+    const entregou = (a.entregas || []).some(e => e.aluno === user.nome);
+    const atrasada = !entregou && a.prazo && a.prazo < hojeISO();
+    const badge = entregou ? '<span class="badge badge-ok">Entregue</span>'
+                : atrasada ? '<span class="badge badge-bad">Atrasada</span>'
+                : '<span class="badge badge-warn">Pendente</span>';
+    const temQuestoes = (a.questoes || []).length > 0;
+    const acao = entregou
+      ? `<button class="btn btn-ghost btn-sm" onclick="desfazerEntrega('${a.id}')">Desfazer</button>`
+      : (temQuestoes
+          ? `<button class="btn btn-primary btn-sm" onclick="abrirResponder('${a.id}')">Responder</button>`
+          : `<button class="btn btn-primary btn-sm" onclick="entregar('${a.id}')">Marcar entregue</button>`);
+    return `<tr>
+      <td><strong>${a.titulo}</strong></td>
+      <td>${a.disciplina}</td>
+      <td>${fmtData(a.prazo)}</td>
+      <td>${badge}</td>
+      <td>${acao}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function entregar(id) {
+  const a = DB.get('atividades', id);
+  if (!a) return;
+  if (!confirm('Marcar como entregue?')) return;
+  const entregas = a.entregas || [];
+  if (entregas.some(e => e.aluno === user.nome)) return;
+  entregas.push({ aluno: user.nome, data: hojeISO() });
+  try {
+    await DB.update('atividades', id, { entregas });
+    toast('Atividade marcada como entregue.');
+    renderVisao();
+    renderAtividades();
+  } catch (err) { toast('Erro ao registrar entrega.', 'erro'); }
+}
+
+async function desfazerEntrega(id) {
+  const a = DB.get('atividades', id);
+  if (!a) return;
+  if (!confirm('Desfazer entrega?')) return;
+  const entregas = (a.entregas || []).filter(e => e.aluno !== user.nome);
+  try {
+    await DB.update('atividades', id, { entregas });
+    toast('Entrega desfeita.');
+    renderVisao();
+    renderAtividades();
+  } catch (err) { toast('Erro ao desfazer entrega.', 'erro'); }
+}
+
+/* ---------- Modal de responder ---------- */
+function abrirResponder(id) {
+  const a = DB.get('atividades', id);
+  if (!a) return;
+  atividadeAtual = a;
+
+  document.getElementById('respTituloAtiv').textContent = a.titulo;
+  document.getElementById('respSubAtiv').textContent =
+    `${a.turma} · ${a.disciplina} · Prazo ${fmtData(a.prazo)}`;
+
+  const questoes = a.questoes || [];
+  const minhas = ((a.respostas || {})[user.nome] || {}).respostas || {};
+
+  const body = document.getElementById('respBodyAtiv');
+  if (!questoes.length) {
+    body.innerHTML = '<div class="placeholder"><h3>Sem questões</h3><p>Esta atividade não possui questões. Use "Marcar entregue".</p></div>';
+  } else {
+    body.innerHTML = questoes.map((q, i) => {
+      const respostaSalva = minhas[q.id];
+      if (q.tipo === 'multipla') {
+        return `<div class="resposta-questao" data-qid="${q.id}">
+          <div class="r-enunciado"><span class="r-num">${i + 1}.</span>${q.enunciado}</div>
+          <div class="r-alternativas">
+            ${q.alternativas.map((alt, idx) => `
+              <label class="r-alt">
+                <input type="radio" name="resp_${q.id}" value="${idx}" ${respostaSalva === idx ? 'checked' : ''} />
+                <span><strong>${['A','B','C','D'][idx]})</strong> ${alt}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>`;
+      }
+      return `<div class="resposta-questao" data-qid="${q.id}">
+        <div class="r-enunciado"><span class="r-num">${i + 1}.</span>${q.enunciado}</div>
+        <textarea placeholder="Digite sua resposta..." data-dissertativa="${q.id}">${respostaSalva ? String(respostaSalva).replace(/</g,'&lt;') : ''}</textarea>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('modalResponder').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharModalResponder() {
+  document.getElementById('modalResponder').classList.remove('open');
+  document.body.style.overflow = '';
+  atividadeAtual = null;
+}
+
+async function enviarRespostas() {
+  if (!atividadeAtual) return;
+  const a = atividadeAtual;
+  const questoes = a.questoes || [];
+  const respostas = {};
+
+  let faltou = false;
+  questoes.forEach(q => {
+    if (q.tipo === 'multipla') {
+      const sel = document.querySelector(`input[name="resp_${q.id}"]:checked`);
+      if (!sel) { faltou = true; return; }
+      respostas[q.id] = parseInt(sel.value, 10);
+    } else {
+      const ta = document.querySelector(`textarea[data-dissertativa="${q.id}"]`);
+      respostas[q.id] = ta ? ta.value.trim() : '';
+    }
+  });
+
+  if (faltou) {
+    if (!confirm('Você deixou questões sem resposta. Enviar mesmo assim?')) return;
+  }
+
+  const respostasGerais = { ...(a.respostas || {}) };
+  respostasGerais[user.nome] = { data: hojeISO(), respostas };
+
+  const entregas = a.entregas || [];
+  if (!entregas.some(e => e.aluno === user.nome)) {
+    entregas.push({ aluno: user.nome, data: hojeISO() });
+  }
+
+  try {
+    await DB.update('atividades', a.id, { respostas: respostasGerais, entregas });
+    toast('Respostas enviadas.');
+    fecharModalResponder();
+    renderVisao();
+    renderAtividades();
+  } catch (err) { toast('Erro ao enviar respostas.', 'erro'); }
+}
+
+/* ============================================================
+   BOLETIM
+   ============================================================ */
+function renderBoletimAluno() {
+  const tabela = document.getElementById('tabelaBolAluno');
+  if (!tabela) return;
+  const thead = tabela.querySelector('thead');
+  const tbody = tabela.querySelector('tbody');
+
+  const turma = minhaTurma();
+  if (!turma) {
+    thead.innerHTML = '';
+    tbody.innerHTML = '<tr><td style="text-align:center;padding:24px;color:var(--cinza-500);">Sem turma vinculada.</td></tr>';
+    return;
+  }
+
+  const bimestre = +(document.getElementById('selBimAluno')?.value || 1);
+  const disciplinas = disciplinasDaMinhaTurma();
+  const notas = DB.list('notas').filter(n => n.aluno === user.nome && n.turma === turma && n.bimestre === bimestre);
+
+  thead.innerHTML = '<tr><th>Disciplina</th><th>Nota</th><th>Status</th></tr>';
+
+  const linhas = disciplinas.map(d => {
+    const n = notas.find(x => x.disciplina === d);
+    if (!n) return `<tr><td>${d}</td><td>—</td><td><span class="badge badge-info">Sem nota</span></td></tr>`;
+    const cor = Number(n.nota) >= 6 ? 'badge-ok' : 'badge-bad';
+    const txt = Number(n.nota) >= 6 ? 'Aprovado' : 'Recuperação';
+    return `<tr><td>${d}</td><td><strong>${Number(n.nota).toFixed(1)}</strong></td><td><span class="badge ${cor}">${txt}</span></td></tr>`;
+  });
+
+  const validas = notas.map(n => Number(n.nota));
+  const m = validas.length ? media(validas) : 0;
+  const corMedia = m >= 6 ? 'badge-ok' : 'badge-bad';
+  linhas.push(`<tr style="background:var(--azul-50);"><td><strong>Média geral</strong></td><td><strong>${m.toFixed(1)}</strong></td><td><span class="badge ${corMedia}">${m >= 6 ? 'Bom' : 'Atenção'}</span></td></tr>`);
+
+  tbody.innerHTML = linhas.join('');
+}
+
+/* ============================================================
+   FALTAS
+   ============================================================ */
+function renderFaltas() {
+  const turma = minhaTurma();
+  const kpiPres = document.getElementById('kpiPres');
+  const kpiFalt = document.getElementById('kpiFalt');
+  const kpiFreq2 = document.getElementById('kpiFreq2');
+  const tbody = document.querySelector('#tabFaltasAluno tbody');
+  if (!tbody) return;
+
+  if (!turma) {
+    kpiPres.textContent = '0';
+    kpiFalt.textContent = '0';
+    kpiFreq2.textContent = '0%';
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--cinza-500);">Sem turma vinculada.</td></tr>';
+    return;
+  }
+
+  const faltas = DB.list('faltas').filter(f => f.aluno === user.nome && f.turma === turma);
+  const presencas = faltas.filter(f => f.status === 'Presente').length;
+  const ausencias = faltas.filter(f => f.status === 'Falta').length;
+  const freq = faltas.length ? Math.round((presencas / faltas.length) * 100) : 100;
+
+  kpiPres.textContent = presencas;
+  kpiFalt.textContent = ausencias;
+  kpiFreq2.textContent = freq + '%';
+
+  tbody.innerHTML = faltas.length
+    ? faltas.slice().sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')))
+        .map(f => `<tr>
+          <td>${fmtData(f.data)}</td>
+          <td>${f.disciplina}</td>
+          <td>${f.status === 'Presente' ? '<span class="badge badge-ok">Presente</span>' : '<span class="badge badge-bad">Falta</span>'}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--cinza-500);">Sem registros.</td></tr>';
+}
+
+/* ============================================================
+   DESEMPENHO
+   ============================================================ */
+function renderDesempenho() {
+  const cont = document.getElementById('desempenhoAluno');
+  if (!cont) return;
+
+  const turma = minhaTurma();
+  if (!turma) {
+    cont.className = '';
+    cont.innerHTML = '<p style="font-size:13px;color:var(--cinza-500);">Sem turma vinculada.</p>';
+    return;
+  }
+
+  const bimestre = +(document.getElementById('selBimAluno')?.value || 1);
+  const disciplinas = disciplinasDaMinhaTurma();
+  const notas = DB.list('notas').filter(n => n.aluno === user.nome && n.turma === turma && n.bimestre === bimestre);
+
+  cont.className = 'donut-grid';
+  cont.innerHTML = disciplinas.map(d => {
+    const n = notas.find(x => x.disciplina === d);
+    const nota = n ? Number(n.nota) : 0;
+    return `
+      <div class="donut-item">
+        ${donutSVG(notaParaPct(nota), corPorNota(nota), nota.toFixed(1).replace('.', ','))}
+        <div class="donut-info">
+          <div class="nome">${d}</div>
+          <div class="valor">${nota >= 6 ? 'Aprovado' : 'Abaixo da média'}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   RELATÓRIOS
+   ============================================================ */
+function renderRelatorios() {
+  const cont = document.getElementById('listaRelAluno');
+  if (!cont) return;
+  const rels = DB.list('relatorios').filter(r => r.aluno === user.nome);
+  cont.innerHTML = rels.length
+    ? rels.map(r => `
+      <div class="card floating">
+        <div class="card-title">${r.periodo}</div>
+        <div class="card-sub">${r.professor} — ${fmtData(r.data)}</div>
+        <p style="font-size:13px;color:var(--preto-700);">${r.observacoes}</p>
+      </div>
+    `).join('')
+    : '<div class="placeholder" style="grid-column:1/-1;"><h3>Sem relatórios</h3><p>Nenhum relatório emitido ainda.</p></div>';
+}
+
+/* ============================================================
+   MURAL
+   ============================================================ */
+function renderMural() {
+  const cont = document.getElementById('listaMuralAluno');
+  if (!cont) return;
+  const avisos = DB.list('avisos')
+    .filter(a => a.publico === 'Todos' || a.publico === 'Alunos')
+    .slice().sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')));
+  const corBadge = { 'Alunos': 'badge-info', 'Professores': 'badge-warn', 'Pais': 'badge-bad', 'Todos': 'badge-info' };
+  cont.innerHTML = avisos.length
+    ? avisos.map(a => `
+      <div class="aviso">
+        <div class="meta"><span class="badge ${corBadge[a.publico] || 'badge-info'}">${a.publico}</span> ${fmtData(a.data)} — ${a.autor || ''}</div>
+        <h4>${a.titulo}</h4>
+        <p>${a.mensagem}</p>
+      </div>
+    `).join('')
+    : '<p style="color:var(--cinza-500);">Sem avisos.</p>';
+}
+
+/* ============================================================
+   PERFIL
+   ============================================================ */
+function preencherPerfilAluno() {
+  const r = meuRegistro();
+  const elTurma = document.getElementById('pTurma');
+  const elResp = document.getElementById('pResp');
+  const elTel = document.getElementById('pTel');
+
+  if (r) {
+    if (elTurma) elTurma.value = r.turma || '—';
+    if (elResp) elResp.value = r.responsavel || '—';
+    if (elTel && !elTel.value) elTel.value = r.celularResponsavel || '';
+  } else {
+    if (elTurma) elTurma.value = user.turma || 'Não vinculado';
+    if (elResp) elResp.value = '—';
+  }
+}
+
+/* ============================================================
+   RENDER GERAL
+   ============================================================ */
+function renderTudo() {
+  renderVisao();
+  renderMinhasTurmas();
+  renderAtividades();
+  renderBoletimAluno();
+  renderFaltas();
+  renderDesempenho();
+  renderRelatorios();
+  renderMural();
+  preencherPerfilAluno();
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+(async () => {
+  user = await Auth.require('aluno');
+  if (!user) return;
+
+  await DB.sync();
+
+  initTabs({
+    visao:      ['Visão Geral', 'Suas aulas e atividades'],
+    turmas:     ['Minhas Turmas', 'Turmas em que você está matriculado'],
+    atividades: ['Atividades', 'Atividades designadas'],
+    boletim:    ['Boletim', 'Suas notas'],
+    faltas:     ['Faltas', 'Registro de presença'],
+    desempenho: ['Desempenho', 'Sua evolução'],
+    relatorios: ['Relatórios', 'Relatórios dos professores'],
+    mural:      ['Mural de Avisos', 'Comunicados'],
+    perfil:     ['Perfil', 'Seus dados']
+  });
+  preencherUsuarioUI(user);
+  initUploadPerfil();
+
+  const selBim = document.getElementById('selBimAluno');
+  if (selBim) {
+    selBim.addEventListener('change', () => {
+      renderBoletimAluno();
+      renderDesempenho();
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('modalResponder').classList.contains('open')) {
+      fecharModalResponder();
+    }
+  });
+
+  renderTudo();
+})();
+</script>
+
+</body>
+</html>
