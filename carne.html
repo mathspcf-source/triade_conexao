@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carnê de Pagamento — Tríade Conexão</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --azul-700:#1e3a8a;
+    --azul-600:#2563eb;
+    --azul-500:#3b82f6;
+    --azul-100:#dbeafe;
+    --verde-700:#047857;
+    --verde-500:#10b981;
+    --verde-100:#a7f3d0;
+    --vermelho-700:#be123c;
+    --vermelho-600:#e11d48;
+    --vermelho-500:#f43f5e;
+    --roxo-700:#6d28d9;
+    --roxo-600:#7c3aed;
+    --roxo-500:#8b5cf6;
+    --roxo-800:#5b21b6;
+    --rosa-500:#ec4899;
+    --laranja-500:#f97316;
+    --amarelo-400:#facc15;
+    --cinza-700:#334155;
+    --cinza-500:#475569;
+    --cinza-300:#cbd5e1;
+    --altura-carne: 46mm;
+    --gap-folha: 2.5mm;
+    --pad-folha: 7mm;
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(135deg, #c7d2fe 0%, #fbcfe8 100%);
+    color: var(--cinza-700);
+    padding: 22px 12px 46px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .toolbar {
+    max-width: 210mm;
+    margin: 0 auto 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .btn {
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--roxo-700), var(--roxo-500));
+    border: 0;
+    border-radius: 999px;
+    padding: 11px 22px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(109, 40, 217, .3);
+    transition: transform .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn--ghost {
+    background: #fff;
+    color: var(--roxo-700);
+    box-shadow: 0 4px 12px rgba(109, 40, 217, .15);
+  }
+  .dica {
+    flex: 1 1 260px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--roxo-700);
+  }
+  .dica strong { color: var(--vermelho-600); }
+
+  .aviso-sistema {
+    max-width: 210mm;
+    margin: 0 auto 16px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.5;
+  }
+  .aviso-sistema.amarelo {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+  }
+  .aviso-sistema.vermelho {
+    background: #fee2e2;
+    border-left: 4px solid var(--vermelho-600);
+    color: #991b1b;
+  }
+  .aviso-sistema svg { flex-shrink: 0; margin-top: 1px; }
+  .aviso-sistema strong { display: block; margin-bottom: 3px; font-size: 14px; }
+  .aviso-sistema code {
+    background: rgba(0,0,0,.08);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12.5px;
+  }
+
+  .folha {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto 22px;
+    padding: var(--pad-folha);
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 14px 38px rgba(109, 40, 217, .2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-folha);
+  }
+
+  .carne {
+    position: relative;
+    height: var(--altura-carne);
+    display: flex;
+    background: #fff;
+    border: 1px solid var(--azul-100);
+    border-radius: 7px;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, .1);
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .carne::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--roxo-700), var(--azul-500), #38bdf8, var(--verde-500));
+    border-radius: 7px 7px 0 0;
+    z-index: 2;
+  }
+  .carne::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--vermelho-500), var(--laranja-500), var(--amarelo-400));
+    border-radius: 0 0 7px 7px;
+    z-index: 2;
+  }
+
+  .canhoto {
+    position: relative;
+    width: 31%;
+    padding: 12px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: linear-gradient(180deg, #eff6ff 0%, #e0e7ff 100%);
+    border-right: 2px dashed #818cf8;
+    border-radius: 7px 0 0 7px;
+  }
+  .canhoto::after {
+    content: "";
+    position: absolute;
+    right: -9px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 17px;
+    height: 17px;
+    display: grid;
+    place-items: center;
+    color: var(--vermelho-600);
+    background: #fff;
+    border: 1.5px solid #818cf8;
+    border-radius: 50%;
+    z-index: 3;
+  }
+  .canhoto__topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 3px;
+    border-bottom: 1.5px solid #c7d2fe;
+    flex: none;
+  }
+  .canhoto__rotulo {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--roxo-700);
+  }
+  .canhoto .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    flex: none;
+  }
+  .canhoto .linha-dupla { display: flex; gap: 8px; }
+  .canhoto .linha-dupla > .campo { flex: 1; min-width: 0; }
+  .campo--assinatura { margin-top: auto; }
+
+  .via {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border-radius: 0 7px 7px 0;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  }
+  .via__topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1.5px solid #bfdbfe;
+  }
+  .marca {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-width: 0;
+    flex: 1;
+    text-align: center;
+  }
+  .marca__titulo {
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--azul-700);
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .marca__subtitulo {
+    font-size: 8.5px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--laranja-500);
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .marca__linha {
+    width: 40px;
+    height: 3px;
+    margin-top: 3px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--vermelho-500), var(--amarelo-400), var(--verde-500), var(--azul-500));
+  }
+
+  .badge {
+    font-weight: 800;
+    letter-spacing: .04em;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge--solido {
+    font-size: 8px;
+    padding: 3px 8px;
+    background: linear-gradient(135deg, var(--roxo-700), var(--roxo-500));
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(109, 40, 217, 0.4);
+  }
+  .badge--gradiente {
+    font-size: 9.5px;
+    padding: 4px 12px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--vermelho-600), var(--laranja-500));
+    box-shadow: 0 2px 6px rgba(225, 29, 72, .35);
+    flex: none;
+  }
+
+  .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .rotulo {
+    font-size: 7.5px;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--azul-700);
+    line-height: 1.2;
+  }
+  .linha {
+    height: 13px;
+    border-bottom: 1.5px dotted #818cf8;
+  }
+  .valor-preenchido {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #1e293b;
+    padding: 1px 0 2px;
+    border-bottom: 1.5px dotted #818cf8;
+    min-height: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+  }
+
+  .data {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+  }
+  .data .cx {
+    flex: 1;
+    height: 13px;
+    padding-bottom: 1px;
+    border-bottom: 1.5px dotted #818cf8;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--roxo-700);
+    line-height: 1;
+  }
+  .data .cx--ano { flex: 1.6; }
+  .data i {
+    font-style: normal;
+    font-size: 9px;
+    line-height: 1.3;
+    color: var(--roxo-500);
+    font-weight: bold;
+  }
+
+  .via__corpo {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: 10px;
+  }
+  .via__esq {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .via__esq .campo { flex: 1; justify-content: space-between; }
+  .via__dir {
+    width: 38%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .caixa {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 5px 8px 5px;
+    border: 1.5px solid #93c5fd;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  }
+  .caixa > .rotulo { color: var(--azul-700); }
+  .caixa--verde {
+    border-color: #6ee7b7;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  }
+  .caixa--verde > .rotulo { color: var(--verde-700); }
+
+  .rotulo--flex {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .rotulo--flex svg { flex-shrink: 0; }
+
+  .valor {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .valor .moeda {
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--verde-700);
+    padding-bottom: 2px;
+  }
+  .valor__campo {
+    flex: 1;
+    height: 13px;
+    padding-bottom: 1px;
+    border-bottom: 1.5px dotted #10b981;
+    display: flex;
+    align-items: flex-end;
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--verde-700);
+    line-height: 1;
+  }
+
+  .via__rodape {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .recebido {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+  }
+  .recebido__label {
+    font-size: 7.5px;
+    font-weight: 800;
+    color: var(--roxo-700);
+    white-space: nowrap;
+    padding-bottom: 2px;
+  }
+  .recebido .linha {
+    flex: 1;
+    height: 12px;
+    border-bottom: 1.5px dotted #a78bfa;
+  }
+  .recebido .linha--data {
+    flex: 0 0 92px;
+    height: 12px;
+    border-bottom: 1.5px dotted #a78bfa;
+  }
+  .ok {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--verde-500), #34d399);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, .5);
+  }
+  .ok svg { width: 9px; height: 9px; }
+
+  .loading {
+    max-width: 210mm;
+    margin: 30px auto;
+    text-align: center;
+    font-weight: 600;
+    color: var(--roxo-700);
+    font-size: 15px;
+  }
+
+  @media print {
+    @page { size: A4; margin: 0; }
+    html, body { background: #fff; padding: 0; margin: 0; }
+    .no-print { display: none !important; }
+    .aviso-sistema { display: none !important; }
+    .loading { display: none !important; }
+
+    .folha {
+      width: 210mm; height: 297mm; margin: 0;
+      padding: var(--pad-folha); border-radius: 0;
+      box-shadow: none;
+      break-after: page;
+      page-break-after: always;
+    }
+    .folha:last-child { break-after: auto; page-break-after: auto; }
+    .carne { box-shadow: none; }
+
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Barra de ações -->
+<div class="toolbar no-print">
+  <button class="btn" type="button" onclick="window.print()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 6 2 18 2 18 9"/>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
+    </svg>
+    Imprimir / Salvar em PDF
+  </button>
+  <button class="btn btn--ghost" type="button" onclick="window.close()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/>
+      <polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Fechar
+  </button>
+  <p class="dica" id="resumo"></p>
+</div>
+
+<!-- Avisos -->
+<div id="avisoSistema"></div>
+
+<!-- Loading -->
+<div class="loading" id="loading" style="display:none;">Carregando dados do Supabase...</div>
+
+<!-- Páginas -->
+<main id="paginas"></main>
+
+<script src="db.js"></script>
+<script>
+/* ============================================================
+   CARNÊ — Tríade Conexão (Supabase)
+   Sem capa. Apenas recibos.
+   ============================================================ */
+
+const CONFIG = {
+  titulo:    "Banca de Estudo e Reforço Escolar",
+  subtitulo: "Tríade Conexão",
+  totalParcelas: 12,
+  porPagina:     6
+};
+
+const SVG_CHECK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const SVG_CALENDARIO = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+const SVG_DINHEIRO = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`;
+const SVG_ALERTA = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+
+const pad2 = n => String(n).padStart(2, '0');
+
+function fmtMoeda(v) {
+  return Number(v || 0).toFixed(2).replace('.', ',');
+}
+
+function upper(v) {
+  return String(v || '').toUpperCase();
+}
+
+function mostrarAviso(tipo, html) {
+  document.getElementById('avisoSistema').innerHTML =
+    `<div class="aviso-sistema ${tipo}">${SVG_ALERTA}<div>${html}</div></div>`;
+}
+
+/* ============================================================
+   Vencimentos
+   ============================================================ */
+function listaVencimentos(anoBase, diaBase, totalParcelas) {
+  const n = totalParcelas;
+  const ano = Number(anoBase) || new Date().getFullYear();
+  const dia = Number(diaBase) || 10;
+
+  return Array.from({ length: n }, (_, i) => {
+    const m = i % 12;
+    const a = ano + Math.floor(i / 12);
+    const ultimoDia = new Date(a, m + 1, 0).getDate();
+    const d = Math.min(dia, ultimoDia);
+    return `${pad2(d)}/${pad2(m + 1)}/${a}`;
+  });
+}
+
+/* ============================================================
+   HTML do carnê (uma parcela)
+   ============================================================ */
+function carneHTML(i, parcelas, valorPadrao, aluno) {
+  const p      = parcelas[i] || {};
+  const num    = pad2(i + 1);
+  const total  = pad2(CONFIG.totalParcelas);
+  const venc   = p.vencimento || '';
+  const partes = venc.split('/');
+  const valor  = valorPadrao || '';
+  const dataPag = p.dataPagamento || '';
+
+  const nomeAluno = upper(aluno?.nome);
+  const matricula = aluno?.matricula ? upper(aluno.matricula) : '';
+  const nomeResp  = upper(aluno?.responsavel);
+
+  return `
+  <article class="carne">
+    <div class="canhoto">
+      <div class="canhoto__topo">
+        <span class="canhoto__rotulo">Canhoto</span>
+        <span class="badge badge--solido">${num}/${total}</span>
+      </div>
+
+      <div class="campo">
+        <span class="rotulo">Aluno(a)</span>
+        ${nomeAluno ? `<div class="valor-preenchido">${nomeAluno}</div>` : `<div class="linha"></div>`}
+      </div>
+
+      ${matricula ? `
+      <div class="campo">
+        <span class="rotulo">Matrícula</span>
+        <div class="valor-preenchido">${matricula}</div>
+      </div>
+      ` : ''}
+
+      <div class="linha-dupla">
+        <div class="campo">
+          <span class="rotulo">Vencimento</span>
+          <div class="data">
+            <span class="cx">${partes[0] || ''}</span><i>/</i>
+            <span class="cx">${partes[1] || ''}</span><i>/</i>
+            <span class="cx cx--ano">${partes[2] || ''}</span>
+          </div>
+        </div>
+        <div class="campo">
+          <span class="rotulo">Valor (R$)</span>
+          ${valor ? `<div class="valor-preenchido">${valor}</div>` : `<div class="linha"></div>`}
+        </div>
+      </div>
+
+      <div class="campo">
+        <span class="rotulo">Data do pagamento</span>
+        ${dataPag
+          ? `<div class="valor-preenchido">${dataPag}</div>`
+          : `<div class="data">
+              <span class="cx"></span><i>/</i>
+              <span class="cx"></span><i>/</i>
+              <span class="cx cx--ano"></span>
+            </div>`}
+      </div>
+
+      <div class="campo campo--assinatura">
+        <span class="rotulo">Visto / Assinatura</span>
+        <div class="linha"></div>
+      </div>
+    </div>
+
+    <div class="via">
+      <div class="via__topo">
+        <div class="marca">
+          <span class="marca__titulo">${CONFIG.titulo.toUpperCase()}</span>
+          <span class="marca__subtitulo">${CONFIG.subtitulo.toUpperCase()}</span>
+          <span class="marca__linha" aria-hidden="true"></span>
+        </div>
+        <span class="badge badge--gradiente">Parcela ${num}/${total}</span>
+      </div>
+
+      <div class="via__corpo">
+        <div class="via__esq">
+          <div class="campo">
+            <span class="rotulo">Nome do aluno(a)</span>
+            ${nomeAluno ? `<div class="valor-preenchido">${nomeAluno}</div>` : `<div class="linha"></div>`}
+          </div>
+          ${matricula ? `
+          <div class="campo">
+            <span class="rotulo">Matrícula</span>
+            <div class="valor-preenchido">${matricula}</div>
+          </div>` : ''}
+          <div class="campo">
+            <span class="rotulo">Responsável</span>
+            ${nomeResp ? `<div class="valor-preenchido">${nomeResp}</div>` : `<div class="linha"></div>`}
+          </div>
+        </div>
+
+        <div class="via__dir">
+          <div class="caixa">
+            <span class="rotulo rotulo--flex">${SVG_CALENDARIO} Vencimento</span>
+            <div class="data">
+              <span class="cx">${partes[0] || ''}</span><i>/</i>
+              <span class="cx">${partes[1] || ''}</span><i>/</i>
+              <span class="cx cx--ano">${partes[2] || ''}</span>
+            </div>
+          </div>
+          <div class="caixa caixa--verde">
+            <span class="rotulo rotulo--flex">${SVG_DINHEIRO} Valor da mensalidade</span>
+            <div class="valor">
+              <span class="moeda">R$</span>
+              <span class="valor__campo">${valor}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="via__rodape">
+        <div class="recebido">
+          <span class="recebido__label">Recebido por</span>
+          <div class="linha"></div>
+          <span class="recebido__label">Data</span>
+          ${dataPag
+            ? `<div class="valor-preenchido" style="flex:0 0 92px;padding:0 0 1px;text-align:center;">${dataPag}</div>`
+            : `<div class="linha linha--data"></div>`}
+          <span class="ok" aria-hidden="true">${SVG_CHECK}</span>
+        </div>
+      </div>
+    </div>
+  </article>`;
+}
+
+/* ============================================================
+   Render
+   ============================================================ */
+function renderCarne({ aluno, parcelas, valorPadrao }) {
+  const container = document.getElementById('paginas');
+  container.innerHTML = '';
+
+  const porPagina = Math.max(1, Math.min(CONFIG.porPagina, parcelas.length));
+  const areaUtil  = 297 - (2 * 7) - 2;
+  const altura    = (areaUtil - (porPagina - 1) * 2.5) / porPagina;
+  document.documentElement.style.setProperty('--altura-carne', altura.toFixed(2) + 'mm');
+
+  for (let i = 0; i < parcelas.length; i += porPagina) {
+    const fim = Math.min(i + porPagina, parcelas.length);
+    let conteudo = '';
+    for (let j = i; j < fim; j++) {
+      conteudo += carneHTML(j, parcelas, valorPadrao, aluno);
+    }
+    container.insertAdjacentHTML('beforeend', `<div class="folha">${conteudo}</div>`);
+  }
+
+  const partes = [
+    `${parcelas.length} parcelas`,
+    `${porPagina} por página`,
+    valorPadrao ? `R$ ${valorPadrao} cada` : null
+  ].filter(Boolean);
+  document.getElementById('resumo').innerHTML =
+    partes.join(' • ') +
+    '<br>Na impressão, mantenha <strong>Margens: Padrão</strong> e marque <strong>Gráficos de plano de fundo</strong>.';
+}
+
+/* ============================================================
+   Boot — carrega do Supabase
+   ============================================================ */
+(async () => {
+  const params    = new URLSearchParams(location.search);
+  const nomeAluno = params.get('aluno');
+  const anoParam  = +(params.get('ano') || new Date().getFullYear());
+
+  document.getElementById('loading').style.display = 'block';
+
+  try {
+    await DB.sync();
+
+    const todosAlunos = DB.list('alunos');
+    const todosPags   = DB.list('pagamentos');
+    const todosPlanos = DB.list('planos');
+
+    document.getElementById('loading').style.display = 'none';
+
+    /* -------- Sem parâmetro: demonstração -------- */
+    if (!nomeAluno) {
+      mostrarAviso('amarelo', `
+        <strong>Modo demonstração</strong>
+        Você abriu o <code>carne.html</code> direto, sem o parâmetro <code>?aluno=</code>.
+        Para gerar o carnê real, use o botão <strong>Imprimir carnê</strong> no painel admin.
+      `);
+
+      const alunoDemo = {
+        nome: 'Aluno Exemplo',
+        matricula: '20260001',
+        turma: '9º Ano A',
+        plano: '3 dias na semana',
+        responsavel: 'Responsável Exemplo',
+        vencimento: 12
+      };
+      const vencimentos = listaVencimentos(anoParam, alunoDemo.vencimento, CONFIG.totalParcelas);
+      const parcelas = vencimentos.map((v, i) => ({
+        mes: i + 1, vencimento: v, dataPagamento: '', status: 'Pendente'
+      }));
+      renderCarne({ aluno: alunoDemo, parcelas, valorPadrao: '180,00' });
+      return;
+    }
+
+    /* -------- Aluno não encontrado -------- */
+    const aluno = todosAlunos.find(a => a.nome === nomeAluno);
+    if (!aluno) {
+      mostrarAviso('vermelho', `
+        <strong>Aluno "${nomeAluno}" não existe no banco</strong>
+        Cadastre o aluno no painel admin e abra o carnê pelo botão "Imprimir carnê".
+      `);
+      const vencimentos = listaVencimentos(anoParam, 10, CONFIG.totalParcelas);
+      const parcelas = vencimentos.map((v, i) => ({
+        mes: i + 1, vencimento: v, dataPagamento: ''
+      }));
+      renderCarne({
+        aluno: { nome: nomeAluno, matricula: '', turma: '—', plano: '—', responsavel: '', vencimento: 10 },
+        parcelas, valorPadrao: ''
+      });
+      return;
+    }
+
+    /* -------- Caminho feliz -------- */
+    const pagamentos = todosPags
+      .filter(p => p.aluno === aluno.nome && p.ano === anoParam)
+      .sort((a, b) => a.mes - b.mes);
+
+    const plano = todosPlanos.find(p => p.nome === aluno.plano);
+    const valorPadrao = plano ? fmtMoeda(plano.valor) : '';
+
+    let parcelas;
+    if (pagamentos.length) {
+      parcelas = pagamentos.map(p => ({
+        mes: p.mes,
+        vencimento: p.vencimento || '',
+        dataPagamento: p.dataPagamento || '',
+        status: p.status
+      }));
+    } else {
+      const vencimentos = listaVencimentos(anoParam, aluno.vencimento, CONFIG.totalParcelas);
+      parcelas = vencimentos.map((v, i) => ({
+        mes: i + 1, vencimento: v, dataPagamento: '', status: 'Pendente'
+      }));
+      mostrarAviso('amarelo', `
+        <strong>Nenhum pagamento lançado para ${aluno.nome} em ${anoParam}</strong>
+        O carnê foi gerado usando o valor do plano <code>${aluno.plano}</code>
+        e o vencimento cadastrado (dia ${aluno.vencimento}).
+      `);
+    }
+
+    renderCarne({ aluno, parcelas, valorPadrao });
+  } catch (err) {
+    console.error(err);
+    document.getElementById('loading').style.display = 'none';
+    mostrarAviso('vermelho', `
+      <strong>Erro ao carregar do Supabase</strong>
+      Verifique sua conexão e as credenciais em <code>supabase-client.js</code>.
+    `);
+  }
+})();
+</script>
+
+</body>
+</html>
