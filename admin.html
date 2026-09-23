@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tríade Conexão — Administrador</title>
+<link rel="stylesheet" href="shared.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<style>
+  /* ===== Modal ===== */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(15,23,42,.6);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; overflow-y: auto;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: var(--radius-md);
+    width: 100%; max-width: 560px;
+    box-shadow: var(--sombra-lg);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal.modal-lg { max-width: 900px; }
+  .modal-header {
+    padding: 18px 22px; border-bottom: 1px solid var(--cinza-200);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    position: sticky; top: 0; background: #fff; z-index: 2;
+  }
+  .modal-header h3 { font-size: 17px; font-weight: 800; }
+  .modal-header p { font-size: 12.5px; color: var(--cinza-500); margin-top: 2px; }
+  .modal-body { padding: 22px; }
+  .modal-footer {
+    padding: 16px 22px; border-top: 1px solid var(--cinza-200);
+    display: flex; justify-content: flex-end; gap: 10px;
+    position: sticky; bottom: 0; background: #fff;
+  }
+  .modal-close {
+    width: 34px; height: 34px; border-radius: 8px;
+    border: 1px solid var(--cinza-200); background: #fff;
+    cursor: pointer; display: grid; place-items: center;
+    color: var(--preto-700); transition: background .18s;
+  }
+  .modal-close:hover { background: var(--cinza-100); }
+
+  /* ===== Matrícula gerada (resultado) ===== */
+  .matricula-resultado {
+    padding: 20px;
+    background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+    border: 2px solid #6366f1;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .matricula-resultado .label {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+    color: #4338ca; font-weight: 700; margin-bottom: 6px;
+  }
+  .matricula-resultado .numero {
+    font-size: 34px; font-weight: 900; letter-spacing: .06em;
+    color: #312e81; font-family: 'SF Mono', Menlo, monospace;
+    margin: 4px 0 8px;
+  }
+  .matricula-resultado .senha-info {
+    font-size: 12.5px; color: #4338ca;
+    background: rgba(255,255,255,.6);
+    padding: 6px 10px; border-radius: 8px;
+    display: inline-block;
+  }
+
+  /* ===== Carnê (mantido do anterior) ===== */
+  .carne-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    padding: 16px; margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--azul-700), var(--azul-900));
+    color: #fff; border-radius: var(--radius-md);
+  }
+  .carne-header h4 { font-size: 15px; font-weight: 700; }
+  .carne-header p { font-size: 12.5px; opacity: .85; margin-top: 2px; }
+  .carne-header .info { display: flex; flex-direction: column; gap: 2px; }
+
+  .carne-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 12px; margin-bottom: 16px;
+  }
+  .carne-parcela {
+    border: 1px solid var(--cinza-200);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    background: #fff;
+    display: flex; flex-direction: column; gap: 6px;
+    transition: box-shadow .18s;
+  }
+  .carne-parcela:hover { box-shadow: var(--sombra-md); }
+  .carne-parcela .parc-num {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--cinza-500); font-weight: 700;
+  }
+  .carne-parcela .parc-valor { font-size: 18px; font-weight: 800; color: var(--preto-900); letter-spacing: -.02em; }
+  .carne-parcela .parc-venc { font-size: 12px; color: var(--cinza-500); }
+  .carne-parcela .parc-status { align-self: flex-start; margin-top: 4px; }
+  .carne-parcela.pago { border-left: 4px solid var(--verde-600); }
+  .carne-parcela.pendente { border-left: 4px solid var(--amarelo-600); }
+  .carne-parcela.atrasado { border-left: 4px solid var(--vermelho-600); }
+  .carne-parcela .parc-acoes { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+  .carne-resumo {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; margin-bottom: 16px;
+  }
+  .carne-resumo .item {
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    background: var(--cinza-100); text-align: center;
+  }
+  .carne-resumo .item strong { display: block; font-size: 15px; color: var(--preto-900); font-weight: 800; }
+  .carne-resumo .item span { font-size: 11px; color: var(--cinza-500); text-transform: uppercase; letter-spacing: .04em; }
+
+  @media (max-width: 700px) {
+    .carne-grid { grid-template-columns: 1fr; }
+    .carne-resumo { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+      </div>
+      <div class="brand-text"><strong>Tríade Conexão</strong><span>Painel Administrador</span></div>
+    </div>
+
+    <div class="nav-title">Principal</div>
+    <div class="nav-item active" data-tab="visao"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span>Visão Geral</span></div>
+    <div class="nav-item" data-tab="turmas"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Turmas</span></div>
+    <div class="nav-item" data-tab="professores"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Professores</span></div>
+    <div class="nav-item" data-tab="alunos"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg><span>Alunos</span></div>
+    <div class="nav-item" data-tab="responsaveis"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Responsáveis</span></div>
+    <div class="nav-item" data-tab="inscricoes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg><span>Inscrições</span></div>
+    <div class="nav-item" data-tab="planos"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg><span>Planos</span></div>
+
+    <div class="nav-title">Gestão</div>
+    <div class="nav-item" data-tab="financeiro"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Financeiro</span></div>
+    <div class="nav-item" data-tab="boletim"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Boletim</span></div>
+    <div class="nav-item" data-tab="desempenho"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Desempenho</span></div>
+    <div class="nav-item" data-tab="mural"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg><span>Mural de Avisos</span></div>
+
+    <div class="nav-title">Conta</div>
+    <div class="nav-item" data-tab="perfil"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Perfil</span></div>
+    <div class="nav-item" onclick="logout()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Sair</span></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="page-title"><h1 id="pageTitle">Visão Geral</h1><p id="pageSub">Resumo geral da plataforma</p></div>
+      <div class="user-chip" data-tab="perfil">
+        <div class="avatar" id="chipAvatar">AD</div>
+        <div class="info"><strong>Administrador</strong><span>Matrícula —</span></div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ============ VISÃO GERAL ============ -->
+      <section class="tab active" id="tab-visao">
+        <div class="grid grid-4" style="margin-bottom:16px;">
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="val" id="kpiAlunos">0</div><div class="lbl">Alunos ativos</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg></div><div><div class="val" id="kpiProf">0</div><div class="lbl">Professores</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></div><div><div class="val" id="kpiTurmas">0</div><div class="lbl">Turmas ativas</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="val" id="kpiReceita">R$ 0</div><div class="lbl">Receita do mês</div></div></div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card floating">
+            <div class="card-title">Pagamentos pendentes</div>
+            <div class="card-sub">Mensalidades aguardando confirmação</div>
+            <div class="table-wrap"><table id="tabPendentesVisao"><thead><tr><th>Aluno</th><th>Plano</th><th>Valor</th><th>Vencimento</th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <div class="card floating">
+            <div class="card-title">Avisos recentes</div>
+            <div class="card-sub">Últimas publicações no mural</div>
+            <div id="avisosVisao"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TURMAS ============ -->
+      <section class="tab" id="tab-turmas">
+        <div class="sec-header">
+          <div><h2>Turmas</h2><p>Cadastro e gestão das turmas</p></div>
+          <div class="actions"><button class="btn btn-primary" onclick="novaTurma()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova turma</button></div>
+        </div>
+        <div class="card" id="formTurma" style="display:none;margin-bottom:16px;">
+          <div class="card-title" id="tituloFormTurma">Cadastrar turma</div>
+          <div class="card-sub">Dados básicos da turma</div>
+          <form class="form-grid" onsubmit="salvarTurma(event)">
+            <input type="hidden" id="turmaId" />
+            <div class="field"><label>Nome</label><input id="turmaNome" required placeholder="Ex.: 9º Ano A" /></div>
+            <div class="field"><label>Série / Nível</label>
+              <select id="turmaSerie" required>
+                <option value="">Selecione</option>
+                <optgroup label="Fundamental"><option>6º Ano</option><option>7º Ano</option><option>8º Ano</option><option>9º Ano</option></optgroup>
+                <optgroup label="Médio"><option>1º EM</option><option>2º EM</option><option>3º EM</option></optgroup>
+              </select>
+            </div>
+            <div class="field"><label>Turno</label><select id="turmaTurno" required><option value="">Selecione</option><option>Manhã</option><option>Tarde</option><option>Noite</option></select></div>
+            <div class="field"><label>Professor</label><select id="turmaProfessor" required><option value="">Selecione</option></select></div>
+            <div class="field"><label>Capacidade</label><input id="turmaCapacidade" type="number" min="1" required /></div>
+            <div class="field"><label>Sala</label><input id="turmaSala" /></div>
+            <div class="field"><label>Status</label><select id="turmaStatus"><option>Ativa</option><option>Inativa</option></select></div>
+            <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="fecharForm('formTurma')">Cancelar</button><button type="submit" class="btn btn-primary">Salvar turma</button></div>
+          </form>
+        </div>
+        <div class="table-wrap"><table id="tabTurmas">
+          <thead><tr><th>Turma</th><th>Série</th><th>Turno</th><th>Professor</th><th>Alunos</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </section>
+
+      <!-- ============ PROFESSORES ============ -->
+      <section class="tab" id="tab-professores">
+        <div class="sec-header">
+          <div><h2>Professores</h2><p>Cadastro com login automático por matrícula</p></div>
+          <div class="actions"><button class="btn btn-primary" onclick="novoProfessor()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo professor</button></div>
+        </div>
+        <div class="card" id="formProf" style="display:none;margin-bottom:16px;">
+          <div class="card-title" id="tituloFormProf">Cadastrar professor</div>
+          <div class="card-sub">A matrícula será gerada automaticamente</div>
+          <form class="form-grid" onsubmit="salvarProfessor(event)">
+            <input type="hidden" id="profId" />
+            <div class="field"><label>Nome</label><input id="profNome" required /></div>
+            <div class="field"><label>Senha provisória</label><input id="profSenha" minlength="6" placeholder="Mín. 6 caracteres" /></div>
+            <div class="field"><label>Celular</label><input id="profCelular" type="tel" required /></div>
+            <div class="field"><label>Graduação</label><input id="profGrad" required /></div>
+            <div class="field"><label>Especialização <span class="hint">(opcional)</span></label><input id="profEsp" /></div>
+            <div class="field"><label>Disciplina</label>
+              <select id="profDisciplina" required>
+                <option value="">Selecione</option>
+                <option>Matemática</option><option>Português</option><option>História</option>
+                <option>Geografia</option><option>Ciências</option><option>Física</option>
+                <option>Química</option><option>Biologia</option><option>Inglês</option>
+              </select>
+            </div>
+            <div class="field"><label>Status</label><select id="profStatus"><option>Ativo</option><option>Inativo</option><option>Férias</option></select></div>
+            <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="fecharForm('formProf')">Cancelar</button><button type="submit" class="btn btn-primary">Salvar professor</button></div>
+          </form>
+        </div>
+        <div class="table-wrap"><table id="tabProfessores">
+          <thead><tr><th>Professor</th><th>Matrícula</th><th>Disciplina</th><th>Celular</th><th>Turmas</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </section>
+
+      <!-- ============ ALUNOS ============ -->
+      <section class="tab" id="tab-alunos">
+        <div class="sec-header">
+          <div><h2>Alunos</h2><p>Cadastro com login automático por matrícula</p></div>
+          <div class="actions"><button class="btn btn-primary" onclick="novoAluno()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo aluno</button></div>
+        </div>
+        <div class="card" id="formAluno" style="display:none;margin-bottom:16px;">
+          <div class="card-title" id="tituloFormAluno">Cadastrar aluno</div>
+          <div class="card-sub">A matrícula será gerada automaticamente</div>
+          <form class="form-grid" onsubmit="salvarAluno(event)">
+            <input type="hidden" id="alunoId" />
+            <div class="field"><label>Nome</label><input id="alunoNome" required /></div>
+            <div class="field"><label>Senha provisória</label><input id="alunoSenha" minlength="6" placeholder="Mín. 6 caracteres" /></div>
+            <div class="field"><label>Nascimento</label><input id="alunoNascimento" type="date" required /></div>
+            <div class="field"><label>Responsável</label><input id="alunoResponsavel" required /></div>
+            <div class="field"><label>Celular do responsável</label><input id="alunoCelular" type="tel" required /></div>
+            <div class="field"><label>Turma</label><select id="alunoTurma" required><option value="">Selecione</option></select></div>
+            <div class="field"><label>Plano</label><select id="alunoPlano" required><option value="">Selecione</option></select></div>
+            <div class="field"><label>Vencimento (dia)</label><input id="alunoVencimento" type="number" min="1" max="31" required /></div>
+            <div class="field"><label>Status</label><select id="alunoStatus"><option>Ativo</option><option>Inativo</option></select></div>
+            <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="fecharForm('formAluno')">Cancelar</button><button type="submit" class="btn btn-primary">Salvar aluno</button></div>
+          </form>
+        </div>
+        <div class="table-wrap"><table id="tabAlunos">
+          <thead><tr><th>Aluno</th><th>Matrícula</th><th>Turma</th><th>Plano</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </section>
+
+      <!-- ============ RESPONSÁVEIS ============ -->
+      <section class="tab" id="tab-responsaveis">
+        <div class="sec-header">
+          <div><h2>Responsáveis</h2><p>Pais e responsáveis com login próprio</p></div>
+          <div class="actions"><button class="btn btn-primary" onclick="abrirModalAcesso('pais')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo responsável</button></div>
+        </div>
+        <div class="table-wrap"><table id="tabResponsaveis">
+          <thead><tr><th>Nome</th><th>Matrícula</th><th>Parentesco</th><th>Celular</th><th>Alunos vinculados</th><th>Ações</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </section>
+
+      <!-- ============ INSCRIÇÕES ============ -->
+      <section class="tab" id="tab-inscricoes">
+        <div class="sec-header">
+          <div><h2>Inscrições</h2><p>Fichas de inscrição recebidas</p></div>
+          <div class="actions"><button class="btn btn-primary" onclick="novaInscricao()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova inscrição</button></div>
+        </div>
+        <div class="table-wrap"><table id="tabInscricoes">
+          <thead><tr><th>Data</th><th>Nº</th><th>Aluno</th><th>Série / Nível</th><th>Responsável</th><th>WhatsApp</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </section>
+
+      <!-- ============ PLANOS ============ -->
+      <section class="tab" id="tab-planos">
+        <div class="sec-header">
+          <div><h2>Planos</h2><p>Configure os planos semanais</p></div>
+          <div class="actions"><button class="btn btn-primary" onclick="novoPlano()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo plano</button></div>
+        </div>
+        <div class="card" id="formPlano" style="display:none;margin-bottom:16px;">
+          <div class="card-title" id="tituloFormPlano">Cadastrar plano</div>
+          <form class="form-grid" onsubmit="salvarPlano(event)">
+            <input type="hidden" id="planoId" />
+            <div class="field"><label>Nome</label><input id="planoNome" required placeholder="Ex.: 3 dias na semana" /></div>
+            <div class="field"><label>Dias por semana</label><input id="planoDias" type="number" min="1" max="7" required /></div>
+            <div class="field"><label>Valor (R$)</label><input id="planoValor" type="number" step="0.01" min="0" required /></div>
+            <div class="field"><label>Dia de vencimento</label><input id="planoVencimento" type="number" min="1" max="31" required /></div>
+            <div class="field full"><label>Descrição</label><input id="planoDescricao" /></div>
+            <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="fecharForm('formPlano')">Cancelar</button><button type="submit" class="btn btn-primary">Salvar plano</button></div>
+          </form>
+        </div>
+        <div class="grid grid-3" id="listaPlanos"></div>
+      </section>
+
+      <!-- ============ FINANCEIRO ============ -->
+      <section class="tab" id="tab-financeiro">
+        <div class="sec-header">
+          <div><h2>Financeiro</h2><p>Confirmação de pagamentos e carnês</p></div>
+          <div class="actions">
+            <button class="btn btn-ghost" onclick="abrirModalCarnesGerais()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Ver todos os carnês</button>
+            <button class="btn btn-primary" onclick="gerarPagamentosMes()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Gerar mês atual</button>
+          </div>
+        </div>
+        <div class="grid grid-4" style="margin-bottom:16px;">
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="val" id="kpiReceitaFin">R$ 0</div><div class="lbl">Receita recebida</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="val" id="kpiPendentes">0</div><div class="lbl">Pendentes</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="val" id="kpiPagos">0</div><div class="lbl">Pagos</div></div></div>
+          <div class="card floating stat"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div><div class="val" id="kpiAtrasados">0</div><div class="lbl">Atrasados</div></div></div>
+        </div>
+        <div class="card floating">
+          <div class="sec-header" style="margin-bottom:12px;">
+            <div><div class="card-title">Pagamentos</div><div class="card-sub" style="margin:0;">Confirme ou abra o carnê</div></div>
+            <div class="actions">
+              <select id="filtroAnoFin" onchange="renderFinanceiro()" style="padding:9px 12px;border:1px solid var(--cinza-200);border-radius:8px;font-size:13px;"></select>
+              <input type="text" id="buscaFin" placeholder="Buscar aluno..." oninput="filtrarTabela('tabFin','buscaFin')" style="padding:9px 12px;border:1px solid var(--cinza-200);border-radius:8px;font-size:13px;" />
+            </div>
+          </div>
+          <div class="table-wrap"><table id="tabFin">
+            <thead><tr><th>Aluno</th><th>Plano</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- ============ BOLETIM ============ -->
+      <section class="tab" id="tab-boletim">
+        <div class="sec-header">
+          <div><h2>Boletim</h2><p>Notas por matéria</p></div>
+          <div class="actions">
+            <select id="selNivel" style="padding:10px 12px;border:1px solid var(--cinza-200);border-radius:8px;font-size:13px;"><option value="fund">Fundamental</option><option value="medio">Médio</option></select>
+            <select id="selTurmaBol" style="padding:10px 12px;border:1px solid var(--cinza-200);border-radius:8px;font-size:13px;"></select>
+            <select id="selBimBol" style="padding:10px 12px;border:1px solid var(--cinza-200);border-radius:8px;font-size:13px;"><option value="1">1º Bimestre</option><option value="2">2º Bimestre</option><option value="3">3º Bimestre</option><option value="4">4º Bimestre</option></select>
+          </div>
+        </div>
+        <div class="card floating">
+          <div class="card-title" id="tituloBol"></div>
+          <div class="card-sub">Clique em uma nota para editar — média mínima 6,0</div>
+          <div class="table-wrap"><table id="tabelaBol"><thead></thead><tbody></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- ============ DESEMPENHO ============ -->
+      <section class="tab" id="tab-desempenho">
+        <div class="sec-header"><div><h2>Desempenho</h2><p>Indicadores em tempo real</p></div></div>
+        <div class="grid grid-3" style="margin-bottom:16px;">
+          <div class="card floating"><div class="card-title">Alunos</div><div class="card-sub">Média por turma</div><div id="desempenhoTurmas" class="donut-list"></div></div>
+          <div class="card floating"><div class="card-title">Professores</div><div class="card-sub">Turmas sob responsabilidade</div><div id="desempenhoProfs" class="donut-list"></div></div>
+          <div class="card floating"><div class="card-title">Plataforma</div><div class="card-sub">Indicadores gerais</div><div id="desempenhoPlataforma" class="donut-list"></div></div>
+        </div>
+        <div class="card floating">
+          <div class="card-title">Resumo por turma</div>
+          <div class="card-sub">Nota média, frequência e status</div>
+          <div class="table-wrap"><table id="tabResumoTurmas">
+            <thead><tr><th>Turma</th><th>Alunos</th><th>Média</th><th>Frequência</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- ============ MURAL ============ -->
+      <section class="tab" id="tab-mural">
+        <div class="sec-header">
+          <div><h2>Mural de Avisos</h2><p>Comunicação integrada</p></div>
+          <div class="actions"><button class="btn btn-primary" onclick="novoAviso()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo aviso</button></div>
+        </div>
+        <div class="card" id="formAviso" style="display:none;margin-bottom:16px;">
+          <div class="card-title" id="tituloFormAviso">Publicar aviso</div>
+          <form class="form-grid" onsubmit="salvarAviso(event)">
+            <input type="hidden" id="avisoId" />
+            <div class="field"><label>Título</label><input id="avisoTitulo" required /></div>
+            <div class="field"><label>Público</label><select id="avisoPublico" required><option>Todos</option><option>Alunos</option><option>Professores</option><option>Pais</option></select></div>
+            <div class="field full"><label>Mensagem</label><textarea id="avisoMensagem" rows="4" required></textarea></div>
+            <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="fecharForm('formAviso')">Cancelar</button><button type="submit" class="btn btn-primary">Publicar</button></div>
+          </form>
+        </div>
+        <div class="grid grid-2" id="listaAvisos"></div>
+      </section>
+
+      <!-- ============ PERFIL ============ -->
+      <section class="tab" id="tab-perfil">
+        <div class="perfil-header">
+          <div class="perfil-photo">
+            <span id="perfilInitials" style="font-size:28px;font-weight:700;">AD</span>
+            <img id="perfilImg" alt="" style="display:none;" />
+            <label class="upload" for="perfilFile">Alterar</label>
+            <input type="file" id="perfilFile" accept="image/*" hidden />
+          </div>
+          <div class="perfil-info"><h2 id="perfilNome">Administrador</h2><p id="perfilEmail">Matrícula —</p></div>
+        </div>
+        <div class="card floating">
+          <div class="card-title">Dados do perfil</div>
+          <div class="card-sub">Informações visíveis em relatórios.</div>
+          <form class="form-grid" onsubmit="salvarPerfil(event)">
+            <div class="field"><label>Matrícula</label><input id="pMatricula" readonly /></div>
+            <div class="field"><label>Nome</label><input id="pNome" /></div>
+            <div class="field"><label>Graduação</label><input id="pGrad" placeholder="Ex.: Pedagogia" /></div>
+            <div class="field"><label>Especialização <span class="hint">(opcional)</span></label><input id="pEsp" /></div>
+            <div class="field"><label>Celular</label><input id="pTel" type="tel" placeholder="(00) 00000-0000" /></div>
+            <div class="field full">
+              <label>Nova senha <span class="hint">(deixe em branco para não alterar)</span></label>
+              <input id="pNovaSenha" type="password" minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+            </div>
+            <div class="form-actions"><button type="reset" class="btn btn-ghost">Cancelar</button><button type="submit" class="btn btn-primary">Salvar alterações</button></div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL: RESULTADO (matrícula gerada) ============ -->
+<div class="modal-backdrop" id="modalResultado" onclick="if(event.target===this) fecharModalResultado()">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3>Usuário criado!</h3>
+        <p>Anote a matrícula e entregue a senha.</p>
+      </div>
+      <button class="modal-close" onclick="fecharModalResultado()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="matricula-resultado">
+        <div class="label">Matrícula gerada</div>
+        <div class="numero" id="resultadoMatricula">00000000</div>
+        <div class="senha-info">Senha provisória: <strong id="resultadoSenha">—</strong></div>
+      </div>
+      <p style="font-size:13px;color:var(--cinza-500);text-align:center;line-height:1.5;">
+        <strong id="resultadoNome">—</strong> poderá entrar no sistema usando<br>
+        a matrícula <strong id="resultadoMatricula2">—</strong> e a senha acima.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModalResultado()">Fechar</button>
+      <button class="btn btn-primary" onclick="copiarMatricula()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar matrícula
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: CRIAR ACESSO (responsáveis) ============ -->
+<div class="modal-backdrop" id="modalAcesso" onclick="if(event.target===this) fecharModalAcesso()">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3>Criar acesso de responsável</h3>
+        <p>Gera matrícula e login para o responsável</p>
+      </div>
+      <button class="modal-close" onclick="fecharModalAcesso()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form class="form-grid" id="formAcesso" onsubmit="criarAcesso(event)">
+        <div class="field full"><label>Nome completo</label><input id="acessoNome" required /></div>
+        <div class="field"><label>Senha provisória</label><input id="acessoSenha" required minlength="6" placeholder="Mín. 6 caracteres" /></div>
+        <div class="field"><label>Parentesco</label>
+          <select id="acessoParentesco">
+            <option>Mãe</option><option>Pai</option><option>Avô / Avó</option><option>Responsável legal</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Aluno(s) vinculado(s) <span class="hint">(separe por vírgula)</span></label>
+          <input id="acessoVinculados" placeholder="Ex.: Ana Beatriz Souza, João Souza" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" onclick="fecharModalAcesso()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnCriarAcesso">Criar acesso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: CARNÊ DO ALUNO ============ -->
+<div class="modal-backdrop" id="modalCarne" onclick="if(event.target===this) fecharModalCarne()">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <h3 id="carneTitulo">Carnê do aluno</h3>
+        <p id="carneSubtitulo"></p>
+      </div>
+      <button class="modal-close" onclick="fecharModalCarne()" aria-label="Fechar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="carne-header">
+        <div class="info">
+          <h4 id="carneNomeAluno"></h4>
+          <p id="carneInfoAluno"></p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="carneAno" onchange="renderCarneAluno()" style="padding:8px 10px;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:13px;background:rgba(255,255,255,.1);color:#fff;"></select>
+          <button class="btn" style="background:#fff;color:var(--azul-700);" onclick="gerarCarneAnual()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Gerar carnê anual
+          </button>
+        </div>
+      </div>
+      <div class="carne-resumo" id="carneResumo"></div>
+      <div class="carne-grid" id="carneGrid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModalCarne()">Fechar</button>
+      <button class="btn btn-primary" onclick="imprimirCarne()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir carnê
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: TODOS OS CARNÊS ============ -->
+<div class="modal-backdrop" id="modalCarnesGerais" onclick="if(event.target===this) fecharModalCarnesGerais()">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <h3>Visão geral dos carnês</h3>
+        <p>Status consolidado de todos os alunos no ano</p>
+      </div>
+      <button class="modal-close" onclick="fecharModalCarnesGerais()" aria-label="Fechar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="sec-header" style="margin-bottom:12px;">
+        <div></div>
+        <div class="actions">
+          <select id="carnesGeraisAno" onchange="renderCarnesGerais()" style="padding:9px 12px;border:1px solid var(--cinza-200);border-radius:8px;font-size:13px;"></select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="tabCarnesGerais">
+          <thead><tr><th>Aluno</th><th>Turma</th><th>Total</th><th>Pago</th><th>Pendente</th><th>Atrasado</th><th>Ações</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModalCarnesGerais()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="db.js"></script>
+<script src="shared.js"></script>
+<script>
+/* ============================================================
+   ADMIN — lógica
+   ============================================================ */
+
+let user = null;
+
+const DISCIPLINAS_FUND = ['Português','Matemática','Ciências','História','Geografia','Inglês','Artes','Ed. Física'];
+const DISCIPLINAS_MEDIO = ['Português','Matemática','Física','Química','Biologia','História','Geografia','Filosofia','Sociologia','Inglês'];
+
+/* ============================================================
+   RPC — criar usuário
+   ============================================================ */
+async function chamarCriarUsuario(payload) {
+  const { data, error } = await supabase.rpc('admin_criar_usuario', {
+    p_nome: payload.nome,
+    p_papel: payload.papel,
+    p_senha: payload.senha,
+    p_extras: payload.extras || {}
+  });
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+/* ============================================================
+   MODAL: RESULTADO (matrícula gerada)
+   ============================================================ */
+function mostrarResultado({ nome, matricula, senha }) {
+  document.getElementById('resultadoMatricula').textContent = matricula;
+  document.getElementById('resultadoMatricula2').textContent = matricula;
+  document.getElementById('resultadoSenha').textContent = senha;
+  document.getElementById('resultadoNome').textContent = nome;
+  document.getElementById('modalResultado').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharModalResultado() {
+  document.getElementById('modalResultado').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function copiarMatricula() {
+  const m = document.getElementById('resultadoMatricula').textContent;
+  navigator.clipboard.writeText(m).then(() => toast('Matrícula copiada!'));
+}
+
+/* ============================================================
+   MODAL: CRIAR ACESSO (responsáveis)
+   ============================================================ */
+function abrirModalAcesso() {
+  document.getElementById('formAcesso').reset();
+  document.getElementById('modalAcesso').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharModalAcesso() {
+  document.getElementById('modalAcesso').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function criarAcesso(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnCriarAcesso');
+  btn.disabled = true;
+  btn.textContent = 'Criando...';
+
+  const nome = document.getElementById('acessoNome').value.trim();
+  const senha = document.getElementById('acessoSenha').value;
+  const parentesco = document.getElementById('acessoParentesco').value;
+  const vinculadosTexto = document.getElementById('acessoVinculados').value.trim();
+  const alunos_vinculados = vinculadosTexto
+    ? vinculadosTexto.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
+  try {
+    const resultado = await chamarCriarUsuario({
+      nome,
+      papel: 'pais',
+      senha,
+      extras: { parentesco, alunos_vinculados }
+    });
+
+    await DB.refresh('usuarios');
+    fecharModalAcesso();
+    mostrarResultado({ nome, matricula: resultado.matricula, senha });
+    renderResponsaveis();
+  } catch (err) {
+    console.error(err);
+    toast(err.message, 'erro');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Criar acesso';
+  }
+}
+
+/* ============================================================
+   TURMAS
+   ============================================================ */
+function popularSelectProfessores() {
+  const sel = document.getElementById('turmaProfessor');
+  if (!sel) return;
+  const profs = DB.list('professores');
+  sel.innerHTML = '<option value="">Selecione</option>' +
+    profs.map(p => `<option>${p.nome}</option>`).join('');
+}
+
+function novaTurma() {
+  document.getElementById('turmaId').value = '';
+  document.getElementById('tituloFormTurma').textContent = 'Cadastrar turma';
+  document.querySelector('#formTurma form').reset();
+  popularSelectProfessores();
+  abrirForm('formTurma');
+}
+
+function editarTurma(id) {
+  const t = DB.get('turmas', id);
+  if (!t) return;
+  document.getElementById('turmaId').value = t.id;
+  document.getElementById('tituloFormTurma').textContent = 'Editar turma';
+  popularSelectProfessores();
+  document.getElementById('turmaNome').value = t.nome;
+  document.getElementById('turmaSerie').value = t.serie;
+  document.getElementById('turmaTurno').value = t.turno;
+  document.getElementById('turmaProfessor').value = t.professor;
+  document.getElementById('turmaCapacidade').value = t.capacidade;
+  document.getElementById('turmaSala').value = t.sala || '';
+  document.getElementById('turmaStatus').value = t.status;
+  abrirForm('formTurma');
+}
+
+async function salvarTurma(e) {
+  e.preventDefault();
+  const id = document.getElementById('turmaId').value;
+  const serie = document.getElementById('turmaSerie').value;
+  const nivel = /EM/.test(serie) ? 'medio' : 'fund';
+  const dados = {
+    nome: document.getElementById('turmaNome').value.trim(),
+    serie, nivel,
+    turno: document.getElementById('turmaTurno').value,
+    professor: document.getElementById('turmaProfessor').value,
+    capacidade: +document.getElementById('turmaCapacidade').value,
+    sala: document.getElementById('turmaSala').value.trim(),
+    status: document.getElementById('turmaStatus').value
+  };
+  try {
+    if (id) { await DB.update('turmas', id, dados); toast('Turma atualizada.'); }
+    else    { await DB.create('turmas', dados);       toast('Turma cadastrada.'); }
+    fecharForm('formTurma');
+    renderTurmas(); renderVisao(); renderDesempenho(); popularSelectTurmas(); popularTurmasBoletim();
+  } catch (err) { toast('Erro ao salvar turma.', 'erro'); }
+}
+
+async function excluirTurma(id) {
+  if (!confirm('Excluir esta turma?')) return;
+  await DB.remove('turmas', id);
+  toast('Turma excluída.');
+  renderTurmas(); renderVisao(); renderDesempenho(); popularSelectTurmas(); popularTurmasBoletim();
+}
+
+function renderTurmas() {
+  const turmas = DB.list('turmas');
+  const alunos = DB.list('alunos');
+  const tbody = document.querySelector('#tabTurmas tbody');
+  tbody.innerHTML = turmas.map(t => {
+    const qtd = alunos.filter(a => a.turma === t.nome).length;
+    const cap = qtd >= t.capacidade;
+    const badge = t.status === 'Ativa'
+      ? (cap ? '<span class="badge badge-warn">Lotada</span>' : '<span class="badge badge-ok">Ativa</span>')
+      : '<span class="badge badge-bad">Inativa</span>';
+    return `<tr>
+      <td><strong>${t.nome}</strong></td>
+      <td>${t.serie}</td>
+      <td>${t.turno}</td>
+      <td>${t.professor}</td>
+      <td>${qtd}/${t.capacidade}</td>
+      <td>${badge}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="editarTurma('${t.id}')">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirTurma('${t.id}')">Excluir</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhuma turma cadastrada.</td></tr>';
+}
+
+/* ============================================================
+   PROFESSORES
+   ============================================================ */
+function novoProfessor() {
+  document.getElementById('profId').value = '';
+  document.getElementById('tituloFormProf').textContent = 'Cadastrar professor';
+  document.querySelector('#formProf form').reset();
+  document.getElementById('profSenha').parentElement.style.display = 'flex';
+  abrirForm('formProf');
+}
+
+function editarProfessor(id) {
+  const p = DB.get('professores', id);
+  if (!p) return;
+  document.getElementById('profId').value = p.id;
+  document.getElementById('tituloFormProf').textContent = 'Editar professor';
+  document.getElementById('profSenha').parentElement.style.display = 'none';
+  document.getElementById('profNome').value = p.nome;
+  document.getElementById('profCelular').value = p.celular || '';
+  document.getElementById('profGrad').value = p.graduacao || '';
+  document.getElementById('profEsp').value = p.especializacao || '';
+  document.getElementById('profDisciplina').value = p.disciplina || '';
+  document.getElementById('profStatus').value = p.status || 'Ativo';
+  abrirForm('formProf');
+}
+
+async function salvarProfessor(e) {
+  e.preventDefault();
+  const id = document.getElementById('profId').value;
+
+  // Edição
+  if (id) {
+    const dados = {
+      nome: document.getElementById('profNome').value.trim(),
+      celular: document.getElementById('profCelular').value.trim(),
+      graduacao: document.getElementById('profGrad').value.trim(),
+      especializacao: document.getElementById('profEsp').value.trim(),
+      disciplina: document.getElementById('profDisciplina').value,
+      status: document.getElementById('profStatus').value
+    };
+    try {
+      await DB.update('professores', id, dados);
+      toast('Professor atualizado.');
+      fecharForm('formProf');
+      renderProfessores();
+    } catch (err) { toast('Erro ao atualizar.', 'erro'); }
+    return;
+  }
+
+  // Criação
+  const senha = document.getElementById('profSenha').value;
+  if (!senha || senha.length < 6) {
+    toast('Senha provisória: mínimo 6 caracteres.', 'erro');
+    return;
+  }
+
+  const nome = document.getElementById('profNome').value.trim();
+  const payload = {
+    nome,
+    papel: 'professor',
+    senha,
+    extras: {
+      celular: document.getElementById('profCelular').value.trim(),
+      graduacao: document.getElementById('profGrad').value.trim(),
+      especializacao: document.getElementById('profEsp').value.trim(),
+      disciplina: document.getElementById('profDisciplina').value
+    }
+  };
+
+  try {
+    const resultado = await chamarCriarUsuario(payload);
+
+    await DB.create('professores', {
+      nome,
+      matricula: resultado.matricula,
+      celular: payload.extras.celular,
+      graduacao: payload.extras.graduacao,
+      especializacao: payload.extras.especializacao,
+      disciplina: payload.extras.disciplina,
+      status: document.getElementById('profStatus').value
+    });
+
+    await DB.refresh('usuarios');
+    fecharForm('formProf');
+    renderProfessores(); renderVisao(); renderDesempenho(); popularSelectProfessores();
+    mostrarResultado({ nome, matricula: resultado.matricula, senha });
+  } catch (err) {
+    console.error(err);
+    toast(err.message, 'erro');
+  }
+}
+
+async function excluirProfessor(id) {
+  if (!confirm('Excluir este professor?')) return;
+  await DB.remove('professores', id);
+  toast('Professor excluído.');
+  renderProfessores(); renderVisao(); renderDesempenho(); popularSelectProfessores();
+}
+
+function renderProfessores() {
+  const profs = DB.list('professores');
+  const turmas = DB.list('turmas');
+  const tbody = document.querySelector('#tabProfessores tbody');
+  tbody.innerHTML = profs.map(p => {
+    const qtd = turmas.filter(t => t.professor === p.nome).length;
+    const cor = p.status === 'Ativo' ? 'badge-ok' : (p.status === 'Férias' ? 'badge-warn' : 'badge-bad');
+    return `<tr>
+      <td><strong>${p.nome}</strong></td>
+      <td><code style="font-family:monospace;">${p.matricula || '—'}</code></td>
+      <td>${p.disciplina}</td>
+      <td>${p.celular}</td>
+      <td>${qtd}</td>
+      <td><span class="badge ${cor}">${p.status}</span></td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="editarProfessor('${p.id}')">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirProfessor('${p.id}')">Excluir</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhum professor cadastrado.</td></tr>';
+}
+
+/* ============================================================
+   ALUNOS
+   ============================================================ */
+function popularSelectTurmas() {
+  const sel = document.getElementById('alunoTurma');
+  if (!sel) return;
+  const turmas = DB.list('turmas');
+  sel.innerHTML = '<option value="">Selecione</option>' +
+    turmas.map(t => `<option>${t.nome}</option>`).join('');
+}
+
+function popularSelectPlanos() {
+  const sel = document.getElementById('alunoPlano');
+  if (!sel) return;
+  const planos = DB.list('planos');
+  sel.innerHTML = '<option value="">Selecione</option>' +
+    planos.map(p => `<option>${p.nome}</option>`).join('');
+}
+
+function novoAluno() {
+  document.getElementById('alunoId').value = '';
+  document.getElementById('tituloFormAluno').textContent = 'Cadastrar aluno';
+  document.querySelector('#formAluno form').reset();
+  document.getElementById('alunoSenha').parentElement.style.display = 'flex';
+  popularSelectTurmas(); popularSelectPlanos();
+  abrirForm('formAluno');
+}
+
+function editarAluno(id) {
+  const a = DB.get('alunos', id);
+  if (!a) return;
+  document.getElementById('alunoId').value = a.id;
+  document.getElementById('tituloFormAluno').textContent = 'Editar aluno';
+  document.getElementById('alunoSenha').parentElement.style.display = 'none';
+  popularSelectTurmas(); popularSelectPlanos();
+  document.getElementById('alunoNome').value = a.nome;
+  document.getElementById('alunoNascimento').value = a.nascimento || '';
+  document.getElementById('alunoResponsavel').value = a.responsavel || '';
+  document.getElementById('alunoCelular').value = a.celularResponsavel || '';
+  document.getElementById('alunoTurma').value = a.turma || '';
+  document.getElementById('alunoPlano').value = a.plano || '';
+  document.getElementById('alunoVencimento').value = a.vencimento || 10;
+  document.getElementById('alunoStatus').value = a.status || 'Ativo';
+  abrirForm('formAluno');
+}
+
+async function salvarAluno(e) {
+  e.preventDefault();
+  const id = document.getElementById('alunoId').value;
+
+  // Edição
+  if (id) {
+    const dados = {
+      nome: document.getElementById('alunoNome').value.trim(),
+      nascimento: document.getElementById('alunoNascimento').value,
+      responsavel: document.getElementById('alunoResponsavel').value.trim(),
+      celularResponsavel: document.getElementById('alunoCelular').value.trim(),
+      turma: document.getElementById('alunoTurma').value,
+      plano: document.getElementById('alunoPlano').value,
+      vencimento: +document.getElementById('alunoVencimento').value,
+      status: document.getElementById('alunoStatus').value
+    };
+    try {
+      await DB.update('alunos', id, dados);
+      toast('Aluno atualizado.');
+      fecharForm('formAluno');
+      renderAlunos(); renderVisao(); renderDesempenho();
+      popularSelectTurmas(); popularTurmasBoletim();
+    } catch (err) { toast('Erro ao atualizar.', 'erro'); }
+    return;
+  }
+
+  // Criação
+  const senha = document.getElementById('alunoSenha').value;
+  if (!senha || senha.length < 6) {
+    toast('Senha provisória: mínimo 6 caracteres.', 'erro');
+    return;
+  }
+
+  const nome = document.getElementById('alunoNome').value.trim();
+  const payload = {
+    nome,
+    papel: 'aluno',
+    senha,
+    extras: {
+      turma: document.getElementById('alunoTurma').value,
+      responsavel: document.getElementById('alunoResponsavel').value.trim(),
+      celular: document.getElementById('alunoCelular').value.trim()
+    }
+  };
+
+  try {
+    const resultado = await chamarCriarUsuario(payload);
+
+    await DB.create('alunos', {
+      nome,
+      matricula: resultado.matricula,
+      nascimento: document.getElementById('alunoNascimento').value,
+      responsavel: payload.extras.responsavel,
+      celularResponsavel: payload.extras.celular,
+      turma: payload.extras.turma,
+      plano: document.getElementById('alunoPlano').value,
+      vencimento: +document.getElementById('alunoVencimento').value,
+      status: document.getElementById('alunoStatus').value
+    });
+
+    await DB.refresh('usuarios');
+    fecharForm('formAluno');
+    renderAlunos(); renderVisao(); renderDesempenho();
+    popularSelectTurmas(); popularTurmasBoletim();
+    mostrarResultado({ nome, matricula: resultado.matricula, senha });
+  } catch (err) {
+    console.error(err);
+    toast(err.message, 'erro');
+  }
+}
+
+async function excluirAluno(id) {
+  if (!confirm('Excluir este aluno?')) return;
+  await DB.remove('alunos', id);
+  toast('Aluno excluído.');
+  renderAlunos(); renderVisao(); renderDesempenho(); popularSelectTurmas(); popularTurmasBoletim();
+}
+
+function renderAlunos() {
+  const alunos = DB.list('alunos');
+  const tbody = document.querySelector('#tabAlunos tbody');
+  tbody.innerHTML = alunos.map(a => {
+    const cor = a.status === 'Ativo' ? 'badge-ok' : 'badge-bad';
+    return `<tr>
+      <td><strong>${a.nome}</strong></td>
+      <td><code style="font-family:monospace;">${a.matricula || '—'}</code></td>
+      <td>${a.turma}</td>
+      <td>${a.plano}</td>
+      <td>${a.responsavel}</td>
+      <td><span class="badge ${cor}">${a.status}</span></td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="editarAluno('${a.id}')">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirAluno('${a.id}')">Excluir</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhum aluno cadastrado.</td></tr>';
+}
+
+/* ============================================================
+   RESPONSÁVEIS
+   ============================================================ */
+function renderResponsaveis() {
+  const lista = DB.list('usuarios').filter(u => u.papel === 'pais');
+  const tbody = document.querySelector('#tabResponsaveis tbody');
+  tbody.innerHTML = lista.map(u => `
+    <tr>
+      <td><strong>${u.nome}</strong></td>
+      <td><code style="font-family:monospace;">${u.matricula || '—'}</code></td>
+      <td>${u.parentesco || '—'}</td>
+      <td>${u.celular || '—'}</td>
+      <td>${(u.alunosVinculados || []).join(', ') || '—'}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="excluirResponsavel('${u.id}')">Excluir</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhum responsável cadastrado.</td></tr>';
+}
+
+async function excluirResponsavel(id) {
+  if (!confirm('Excluir este responsável? O login dele será removido do sistema.')) return;
+  try {
+    await DB.remove('usuarios', id);
+    toast('Responsável excluído.');
+    await DB.refresh('usuarios');
+    renderResponsaveis();
+  } catch (err) {
+    toast('Erro ao excluir.', 'erro');
+  }
+}
+
+/* ============================================================
+   INSCRIÇÕES
+   ============================================================ */
+function novaInscricao() { window.location.href = 'ficha-inscricao.html'; }
+function editarInscricao(id) { window.location.href = 'ficha-inscricao.html?id=' + encodeURIComponent(id); }
+
+async function excluirInscricao(id) {
+  if (!confirm('Excluir esta inscrição?')) return;
+  await DB.remove('inscricoes', id);
+  toast('Inscrição excluída.');
+  renderInscricoes();
+}
+
+async function converterEmAluno(id) {
+  const i = DB.get('inscricoes', id);
+  if (!i) return;
+  if (!confirm(`Converter ${i.nome} em aluno matriculado?`)) return;
+
+  const jaExiste = DB.list('alunos').some(a => a.nome.toLowerCase() === i.nome.toLowerCase());
+  if (jaExiste) { alert('Já existe um aluno com este nome.'); return; }
+
+  try {
+    await DB.create('alunos', {
+      nome: i.nome,
+      nascimento: i.nascimento,
+      responsavel: i.responsavel,
+      celularResponsavel: i.whatsapp,
+      turma: '', plano: '',
+      vencimento: +i.vencimento || 10,
+      status: 'Ativo'
+    });
+    await DB.update('inscricoes', id, { status: 'Matriculado' });
+    toast('Aluno matriculado com sucesso.');
+    renderInscricoes(); renderAlunos(); renderVisao(); renderDesempenho();
+  } catch (err) { toast('Erro ao matricular.', 'erro'); }
+}
+
+function renderInscricoes() {
+  const lista = DB.list('inscricoes').slice().sort((a, b) =>
+    String(b.criadoEm || '').localeCompare(String(a.criadoEm || ''))
+  );
+  const tbody = document.querySelector('#tabInscricoes tbody');
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhuma inscrição registrada.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(i => {
+    const corStatus = i.status === 'Matriculado' ? 'badge-ok' : 'badge-warn';
+    const serieNivel = [i.serie, (Array.isArray(i.nivel) && i.nivel.length ? i.nivel.join(', ') : '')]
+      .filter(Boolean).join(' · ') || '—';
+    return `<tr>
+      <td>${fmtData(i.dataInscricao)}</td>
+      <td><strong>${i.numero || '—'}</strong></td>
+      <td><strong>${i.nome}</strong></td>
+      <td>${serieNivel}</td>
+      <td>${i.responsavel || '—'}</td>
+      <td>${i.whatsapp || '—'}</td>
+      <td><span class="badge ${corStatus}">${i.status}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="editarInscricao('${i.id}')">Editar</button>
+        <button class="btn btn-success btn-sm" onclick="converterEmAluno('${i.id}')">Matricular</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirInscricao('${i.id}')">Excluir</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   PLANOS
+   ============================================================ */
+function novoPlano() {
+  document.getElementById('planoId').value = '';
+  document.getElementById('tituloFormPlano').textContent = 'Cadastrar plano';
+  document.querySelector('#formPlano form').reset();
+  abrirForm('formPlano');
+}
+function editarPlano(id) {
+  const p = DB.get('planos', id);
+  if (!p) return;
+  document.getElementById('planoId').value = p.id;
+  document.getElementById('tituloFormPlano').textContent = 'Editar plano';
+  document.getElementById('planoNome').value = p.nome;
+  document.getElementById('planoDias').value = p.dias;
+  document.getElementById('planoValor').value = p.valor;
+  document.getElementById('planoVencimento').value = p.vencimento;
+  document.getElementById('planoDescricao').value = p.descricao || '';
+  abrirForm('formPlano');
+}
+async function salvarPlano(e) {
+  e.preventDefault();
+  const id = document.getElementById('planoId').value;
+  const dados = {
+    nome: document.getElementById('planoNome').value.trim(),
+    dias: +document.getElementById('planoDias').value,
+    valor: +document.getElementById('planoValor').value,
+    vencimento: +document.getElementById('planoVencimento').value,
+    descricao: document.getElementById('planoDescricao').value.trim()
+  };
+  try {
+    if (id) { await DB.update('planos', id, dados); toast('Plano atualizado.'); }
+    else    { await DB.create('planos', dados);       toast('Plano cadastrado.'); }
+    fecharForm('formPlano');
+    renderPlanos(); renderVisao(); popularSelectPlanos();
+  } catch (err) { toast('Erro ao salvar plano.', 'erro'); }
+}
+async function excluirPlano(id) {
+  if (!confirm('Excluir este plano?')) return;
+  await DB.remove('planos', id);
+  toast('Plano excluído.');
+  renderPlanos(); renderVisao(); popularSelectPlanos();
+}
+function renderPlanos() {
+  const planos = DB.list('planos');
+  const cont = document.getElementById('listaPlanos');
+  cont.innerHTML = planos.map(p => `
+    <div class="plano-card">
+      <h3>${p.nome}</h3>
+      <div class="preco">${fmtMoeda(p.valor)}<small>/mês</small></div>
+      <ul>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>${p.descricao || (p.dias + ' aulas semanais')}</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Vencimento dia ${p.vencimento}</li>
+      </ul>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="editarPlano('${p.id}')">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirPlano('${p.id}')">Excluir</button>
+      </div>
+    </div>
+  `).join('') || '<div class="placeholder" style="grid-column:1/-1;"><h3>Nenhum plano</h3><p>Cadastre um plano para começar.</p></div>';
+}
+
+/* ============================================================
+   FINANCEIRO
+   ============================================================ */
+let carneAlunoAtual = null;
+
+async function confirmarPagamento(id) {
+  const hoje = new Date();
+  const dataPagamento =
+    String(hoje.getDate()).padStart(2,'0') + '/' +
+    String(hoje.getMonth() + 1).padStart(2,'0') + '/' +
+    hoje.getFullYear();
+  await DB.update('pagamentos', id, {
+    status: 'Pago', pagoEm: new Date().toISOString(), dataPagamento
+  });
+  toast('Pagamento confirmado.');
+  renderFinanceiro();
+  if (carneAlunoAtual) renderCarneAluno();
+  renderVisao();
+}
+async function estornarPagamento(id) {
+  if (!confirm('Marcar como pendente novamente?')) return;
+  await DB.update('pagamentos', id, { status: 'Pendente', pagoEm: null, dataPagamento: null });
+  toast('Pagamento estornado.');
+  renderFinanceiro();
+  if (carneAlunoAtual) renderCarneAluno();
+  renderVisao();
+}
+async function excluirPagamento(id) {
+  if (!confirm('Excluir este registro?')) return;
+  await DB.remove('pagamentos', id);
+  toast('Pagamento excluído.');
+  renderFinanceiro();
+  if (carneAlunoAtual) renderCarneAluno();
+  renderVisao();
+}
+async function gerarPagamentosMes() {
+  const hoje = new Date();
+  const mes = hoje.getMonth() + 1;
+  const ano = hoje.getFullYear();
+  const alunos = DB.list('alunos').filter(a => a.status === 'Ativo');
+  const planos = DB.list('planos');
+  const pagamentos = DB.list('pagamentos');
+  let criados = 0;
+  for (const a of alunos) {
+    const existe = pagamentos.some(p => p.aluno === a.nome && p.mes === mes && p.ano === ano);
+    if (existe) continue;
+    const plano = planos.find(pl => pl.nome === a.plano);
+    const valor = plano ? plano.valor : 0;
+    const venc = String(a.vencimento).padStart(2, '0');
+    await DB.create('pagamentos', {
+      aluno: a.nome, plano: a.plano, valor, mes, ano,
+      vencimento: `${venc}/${String(mes).padStart(2,'0')}/${ano}`,
+      status: 'Pendente', dataPagamento: null
+    });
+    criados++;
+  }
+  toast(criados ? criados + ' pagamento(s) gerado(s).' : 'Nenhum novo pagamento.');
+  renderFinanceiro(); renderVisao();
+}
+function anosDisponiveis() {
+  const pags = DB.list('pagamentos');
+  const anos = [...new Set(pags.map(p => p.ano).filter(Boolean))].sort((a, b) => b - a);
+  if (!anos.length) anos.push(new Date().getFullYear());
+  return anos;
+}
+function popularFiltrosAno() {
+  const anos = anosDisponiveis();
+  const opts = anos.map(a => `<option value="${a}">${a}</option>`).join('');
+  const selFin = document.getElementById('filtroAnoFin');
+  const selCarne = document.getElementById('carneAno');
+  const selGerais = document.getElementById('carnesGeraisAno');
+  if (selFin) { const v = selFin.value; selFin.innerHTML = opts; selFin.value = v && anos.includes(+v) ? v : anos[0]; }
+  if (selCarne) { const v = selCarne.value; selCarne.innerHTML = opts; selCarne.value = v && anos.includes(+v) ? v : anos[0]; }
+  if (selGerais) { const v = selGerais.value; selGerais.innerHTML = opts; selGerais.value = v && anos.includes(+v) ? v : anos[0]; }
+}
+function renderFinanceiro() {
+  popularFiltrosAno();
+  const anoFiltro = +document.getElementById('filtroAnoFin').value || new Date().getFullYear();
+  const pags = DB.list('pagamentos').filter(p => p.ano === anoFiltro);
+  const recebido = pags.filter(p => p.status === 'Pago').reduce((s, p) => s + Number(p.valor || 0), 0);
+  const pendentes = pags.filter(p => p.status === 'Pendente').length;
+  const pagos = pags.filter(p => p.status === 'Pago').length;
+  const atrasados = pags.filter(p => p.status === 'Atrasado').length;
+  document.getElementById('kpiReceitaFin').textContent = fmtMoeda(recebido);
+  document.getElementById('kpiPendentes').textContent = pendentes;
+  document.getElementById('kpiPagos').textContent = pagos;
+  document.getElementById('kpiAtrasados').textContent = atrasados;
+
+  const tbody = document.querySelector('#tabFin tbody');
+  tbody.innerHTML = pags
+    .slice().sort((a, b) => String(a.aluno || '').localeCompare(String(b.aluno || '')) || (a.mes - b.mes))
+    .map(p => {
+      let badge = 'badge-warn';
+      if (p.status === 'Pago') badge = 'badge-ok';
+      if (p.status === 'Atrasado') badge = 'badge-bad';
+      const acoes = p.status === 'Pago'
+        ? `<button class="btn btn-ghost btn-sm" onclick="estornarPagamento('${p.id}')">Estornar</button>`
+        : `<button class="btn btn-success btn-sm" onclick="confirmarPagamento('${p.id}')">Confirmar</button>`;
+      return `<tr>
+        <td><strong>${p.aluno}</strong></td>
+        <td>${p.plano}</td>
+        <td>${fmtMoeda(p.valor)}</td>
+        <td>${p.vencimento}</td>
+        <td><span class="badge ${badge}">${p.status}</span>${p.dataPagamento ? `<div style="font-size:11px;color:var(--cinza-500);margin-top:3px;">Pago em ${p.dataPagamento}</div>` : ''}</td>
+        <td style="white-space:nowrap;">
+          ${acoes}
+          <button class="btn btn-ghost btn-sm" onclick="abrirCarneAluno('${p.aluno}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Carnê
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="excluirPagamento('${p.id}')">Excluir</button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhum pagamento neste ano.</td></tr>';
+}
+
+/* ============================================================
+   CARNÊ
+   ============================================================ */
+function abrirCarneAluno(nomeAluno) {
+  const aluno = DB.list('alunos').find(a => a.nome === nomeAluno);
+  if (!aluno) { toast('Aluno não encontrado.', 'erro'); return; }
+  carneAlunoAtual = aluno;
+  document.getElementById('carneTitulo').textContent = 'Carnê de ' + aluno.nome;
+  document.getElementById('carneSubtitulo').textContent = 'Mensalidades do aluno';
+  document.getElementById('carneNomeAluno').textContent = aluno.nome;
+  document.getElementById('carneInfoAluno').textContent =
+    `${aluno.turma} · Plano: ${aluno.plano} · Vencimento: dia ${aluno.vencimento}`;
+  popularFiltrosAno();
+  document.getElementById('carneAno').value = new Date().getFullYear();
+  renderCarneAluno();
+  document.getElementById('modalCarne').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function fecharModalCarne() {
+  document.getElementById('modalCarne').classList.remove('open');
+  document.body.style.overflow = '';
+  carneAlunoAtual = null;
+}
+function renderCarneAluno() {
+  if (!carneAlunoAtual) return;
+  const aluno = carneAlunoAtual;
+  const ano = +document.getElementById('carneAno').value || new Date().getFullYear();
+  const pags = DB.list('pagamentos')
+    .filter(p => p.aluno === aluno.nome && p.ano === ano)
+    .sort((a, b) => a.mes - b.mes);
+
+  const total = pags.reduce((s, p) => s + Number(p.valor || 0), 0);
+  const pago = pags.filter(p => p.status === 'Pago').reduce((s, p) => s + Number(p.valor || 0), 0);
+  const pendente = pags.filter(p => p.status === 'Pendente').reduce((s, p) => s + Number(p.valor || 0), 0);
+  const atrasado = pags.filter(p => p.status === 'Atrasado').reduce((s, p) => s + Number(p.valor || 0), 0);
+
+  document.getElementById('carneResumo').innerHTML = `
+    <div class="item"><strong>${fmtMoeda(total)}</strong><span>Total ano</span></div>
+    <div class="item"><strong style="color:var(--verde-600);">${fmtMoeda(pago)}</strong><span>Pago</span></div>
+    <div class="item"><strong style="color:var(--amarelo-600);">${fmtMoeda(pendente)}</strong><span>Pendente</span></div>
+    <div class="item"><strong style="color:var(--vermelho-600);">${fmtMoeda(atrasado)}</strong><span>Atrasado</span></div>
+  `;
+
+  const grid = document.getElementById('carneGrid');
+  if (!pags.length) {
+    grid.innerHTML = `<div class="placeholder" style="grid-column:1/-1;">
+      <h3>Sem parcelas em ${ano}</h3>
+      <p>Use o botão "Gerar carnê anual" para criar as 12 parcelas do ano.</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = pags.map(p => {
+    const statusClass = p.status.toLowerCase() === 'pago' ? 'pago'
+                      : p.status.toLowerCase() === 'atrasado' ? 'atrasado' : 'pendente';
+    const badge = p.status === 'Pago' ? 'badge-ok'
+                : p.status === 'Atrasado' ? 'badge-bad' : 'badge-warn';
+    const acoes = p.status === 'Pago'
+      ? `<button class="btn btn-ghost btn-sm" onclick="estornarPagamento('${p.id}')">Estornar</button>`
+      : `<button class="btn btn-success btn-sm" onclick="confirmarPagamento('${p.id}')">Confirmar</button>`;
+    const venc = p.vencimento || (String(aluno.vencimento).padStart(2,'0') + '/' + String(p.mes).padStart(2,'0') + '/' + ano);
+    return `<div class="carne-parcela ${statusClass}">
+      <div class="parc-num">Parcela ${p.mes}/${ano}</div>
+      <div class="parc-valor">${fmtMoeda(p.valor)}</div>
+      <div class="parc-venc">Vencimento: ${venc}${p.dataPagamento ? `<br>Pago em: ${p.dataPagamento}` : ''}</div>
+      <div class="parc-status"><span class="badge ${badge}">${p.status}</span></div>
+      <div class="parc-acoes">
+        ${acoes}
+        <button class="btn btn-ghost btn-sm" onclick="excluirPagamento('${p.id}')">Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function gerarCarneAnual() {
+  if (!carneAlunoAtual) return;
+  const aluno = carneAlunoAtual;
+  const ano = +document.getElementById('carneAno').value || new Date().getFullYear();
+  const plano = DB.list('planos').find(p => p.nome === aluno.plano);
+  const valor = plano ? plano.valor : 0;
+  const diaVenc = String(aluno.vencimento).padStart(2, '0');
+  const existentes = DB.list('pagamentos').filter(p => p.aluno === aluno.nome && p.ano === ano);
+  let criadas = 0;
+  for (let mes = 1; mes <= 12; mes++) {
+    if (existentes.some(p => p.mes === mes)) continue;
+    await DB.create('pagamentos', {
+      aluno: aluno.nome, plano: aluno.plano, valor, mes, ano,
+      vencimento: `${diaVenc}/${String(mes).padStart(2,'0')}/${ano}`,
+      status: 'Pendente', dataPagamento: null
+    });
+    criadas++;
+  }
+  toast(criadas ? criadas + ' parcela(s) gerada(s).' : 'Carnê já está completo.');
+  renderCarneAluno(); renderFinanceiro(); renderVisao();
+}
+function imprimirCarne() {
+  if (!carneAlunoAtual) return;
+  const ano = document.getElementById('carneAno').value || new Date().getFullYear();
+  const url = 'carne.html?aluno=' + encodeURIComponent(carneAlunoAtual.nome) + '&ano=' + ano;
+  window.open(url, '_blank');
+}
+
+function abrirModalCarnesGerais() {
+  popularFiltrosAno();
+  document.getElementById('carnesGeraisAno').value = new Date().getFullYear();
+  renderCarnesGerais();
+  document.getElementById('modalCarnesGerais').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function fecharModalCarnesGerais() {
+  document.getElementById('modalCarnesGerais').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function renderCarnesGerais() {
+  const ano = +document.getElementById('carnesGeraisAno').value || new Date().getFullYear();
+  const alunos = DB.list('alunos');
+  const pags = DB.list('pagamentos').filter(p => p.ano === ano);
+  const tbody = document.querySelector('#tabCarnesGerais tbody');
+  tbody.innerHTML = alunos.map(a => {
+    const doAluno = pags.filter(p => p.aluno === a.nome);
+    if (!doAluno.length) {
+      return `<tr>
+        <td><strong>${a.nome}</strong></td>
+        <td>${a.turma}</td>
+        <td colspan="4" style="color:var(--cinza-500);font-size:12.5px;">Sem parcelas em ${ano}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="fecharModalCarnesGerais(); abrirCarneAluno('${a.nome}')">Gerar carnê</button></td>
+      </tr>`;
+    }
+    const total = doAluno.length;
+    const pago = doAluno.filter(p => p.status === 'Pago').length;
+    const pend = doAluno.filter(p => p.status === 'Pendente').length;
+    const atras = doAluno.filter(p => p.status === 'Atrasado').length;
+    return `<tr>
+      <td><strong>${a.nome}</strong></td>
+      <td>${a.turma}</td>
+      <td>${total}</td>
+      <td><span class="badge badge-ok">${pago}</span></td>
+      <td><span class="badge badge-warn">${pend}</span></td>
+      <td><span class="badge badge-bad">${atras}</span></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="fecharModalCarnesGerais(); abrirCarneAluno('${a.nome}')">Abrir carnê</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhum aluno cadastrado.</td></tr>';
+}
+
+/* ============================================================
+   BOLETIM
+   ============================================================ */
+function disciplinasPorNivel(nivel) { return nivel === 'medio' ? DISCIPLINAS_MEDIO : DISCIPLINAS_FUND; }
+
+function popularTurmasBoletim() {
+  const nivel = document.getElementById('selNivel').value;
+  const turmas = DB.list('turmas').filter(t => t.nivel === nivel);
+  const sel = document.getElementById('selTurmaBol');
+  const valorAnterior = sel.value;
+  sel.innerHTML = turmas.map(t => `<option>${t.nome}</option>`).join('');
+  if (valorAnterior && turmas.some(t => t.nome === valorAnterior)) sel.value = valorAnterior;
+}
+
+function renderBoletim() {
+  const nivel = document.getElementById('selNivel').value;
+  const turma = document.getElementById('selTurmaBol').value;
+  const bimestre = +document.getElementById('selBimBol').value;
+  const disciplinas = disciplinasPorNivel(nivel);
+
+  document.getElementById('tituloBol').textContent = turma ? 'Boletim — ' + turma : 'Selecione uma turma';
+  if (!turma) {
+    document.querySelector('#tabelaBol thead').innerHTML = '';
+    document.querySelector('#tabelaBol tbody').innerHTML = '<tr><td style="text-align:center;padding:24px;color:var(--cinza-500);">Sem turma selecionada.</td></tr>';
+    return;
+  }
+
+  const alunos = DB.list('alunos').filter(a => a.turma === turma);
+  const notas = DB.list('notas').filter(n => n.turma === turma && n.bimestre === bimestre);
+  const thead = '<tr><th>Aluno</th>' + disciplinas.map(d => `<th>${d}</th>`).join('') + '<th>Média</th></tr>';
+
+  const tbody = alunos.map(a => {
+    const notasAluno = disciplinas.map(d => {
+      const n = notas.find(x => x.aluno === a.nome && x.disciplina === d);
+      return n ? Number(n.nota) : null;
+    });
+    const validas = notasAluno.filter(n => n !== null);
+    const m = validas.length ? media(validas) : 0;
+    const corMedia = m >= 6 ? 'badge-ok' : 'badge-bad';
+    const cells = notasAluno.map((n, i) => {
+      const d = disciplinas[i];
+      if (n === null) return `<td><button class="btn btn-ghost btn-sm" onclick="lancarNota('${a.nome}','${turma}','${d}',${bimestre})">+ lançar</button></td>`;
+      const cor = n >= 6 ? 'var(--verde-600)' : 'var(--vermelho-600)';
+      return `<td style="cursor:pointer;" onclick="lancarNota('${a.nome}','${turma}','${d}',${bimestre})"><strong style="color:${cor}">${n.toFixed(1)}</strong></td>`;
+    }).join('');
+    return `<tr><td><strong>${a.nome}</strong></td>${cells}<td><span class="badge ${corMedia}">${m.toFixed(1)}</span></td></tr>`;
+  }).join('');
+
+  document.querySelector('#tabelaBol thead').innerHTML = thead;
+  document.querySelector('#tabelaBol tbody').innerHTML = tbody ||
+    `<tr><td colspan="${disciplinas.length + 2}" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhum aluno nesta turma.</td></tr>`;
+}
+
+async function lancarNota(aluno, turma, disciplina, bimestre) {
+  const existente = DB.list('notas').find(n =>
+    n.aluno === aluno && n.turma === turma && n.disciplina === disciplina && n.bimestre === bimestre
+  );
+  const valorAtual = existente ? existente.nota : '';
+  const entrada = prompt(`Nota de ${aluno} em ${disciplina} (0 a 10):`, valorAtual);
+  if (entrada === null) return;
+  const nota = parseFloat(String(entrada).replace(',', '.'));
+  if (isNaN(nota) || nota < 0 || nota > 10) { alert('Nota inválida. Use valores entre 0 e 10.'); return; }
+  try {
+    if (existente) await DB.update('notas', existente.id, { nota });
+    else           await DB.create('notas', { aluno, turma, disciplina, bimestre, nota });
+    toast('Nota salva.');
+    renderBoletim(); renderVisao(); renderDesempenho();
+  } catch (err) { toast('Erro ao salvar nota.', 'erro'); }
+}
+
+/* ============================================================
+   DESEMPENHO
+   ============================================================ */
+function renderDesempenho() {
+  const turmas = DB.list('turmas');
+  const alunos = DB.list('alunos');
+  const professores = DB.list('professores');
+  const faltas = DB.list('faltas');
+  const pagamentos = DB.list('pagamentos');
+
+  const contTurmas = document.getElementById('desempenhoTurmas');
+  contTurmas.className = 'donut-list';
+  contTurmas.innerHTML = turmas.length
+    ? turmas.map(t => {
+        const m = calcularMediaTurma(t.nome, 1);
+        return donutItem({
+          percent: notaParaPct(m), cor: corPorNota(m),
+          texto: m.toFixed(1).replace('.', ','),
+          nome: t.nome, valor: `Média ${m.toFixed(1)}`
+        });
+      }).join('')
+    : '<p style="font-size:13px;color:var(--cinza-500);">Sem turmas.</p>';
+
+  const contProfs = document.getElementById('desempenhoProfs');
+  contProfs.className = 'donut-list';
+  contProfs.innerHTML = professores.length
+    ? professores.map(p => {
+        const qtd = turmas.filter(t => t.professor === p.nome).length;
+        const pct = Math.min(100, qtd * 33);
+        return donutItem({
+          percent: pct, cor: corPorPct(pct), texto: pct + '%',
+          nome: p.nome, valor: `${qtd} turma${qtd !== 1 ? 's' : ''} sob responsabilidade`
+        });
+      }).join('')
+    : '<p style="font-size:13px;color:var(--cinza-500);">Sem professores.</p>';
+
+  const totalFaltas = faltas.length;
+  const presentes = faltas.filter(f => f.status === 'Presente').length;
+  const freqGeral = totalFaltas ? Math.round((presentes / totalFaltas) * 100) : 100;
+  const adimpl = pagamentos.length
+    ? Math.round((pagamentos.filter(p => p.status === 'Pago').length / pagamentos.length) * 100)
+    : 100;
+  const ocupacao = turmas.length
+    ? Math.round(turmas.reduce((s, t) => {
+        const n = alunos.filter(a => a.turma === t.nome).length;
+        return s + (n / Math.max(1, t.capacidade)) * 100;
+      }, 0) / turmas.length)
+    : 0;
+
+  const elPlat = document.getElementById('desempenhoPlataforma');
+  elPlat.className = 'donut-list';
+  elPlat.innerHTML = [
+    donutItem({ percent: freqGeral, cor: corPorPct(freqGeral), nome: 'Frequência', valor: `${presentes}/${totalFaltas} presenças` }),
+    donutItem({ percent: adimpl, cor: corPorPct(adimpl), nome: 'Adimplência', valor: `${pagamentos.filter(p => p.status === 'Pago').length}/${pagamentos.length} pagos` }),
+    donutItem({ percent: ocupacao, cor: corPorPct(ocupacao), nome: 'Ocupação', valor: `${alunos.length} alunos em ${turmas.length} turmas` })
+  ].join('');
+
+  const tbody = document.querySelector('#tabResumoTurmas tbody');
+  tbody.innerHTML = turmas.length
+    ? turmas.map(t => {
+        const lista = alunos.filter(a => a.turma === t.nome);
+        const m = calcularMediaTurma(t.nome, 1);
+        const freq = lista.length
+          ? Math.round(lista.reduce((s, a) => s + calcularFrequencia(a.nome, t.nome), 0) / lista.length)
+          : 100;
+        const status = m >= 8 ? 'Ótimo' : m >= 6 ? 'Bom' : 'Atenção';
+        const cor = m >= 8 ? 'badge-ok' : m >= 6 ? 'badge-info' : 'badge-warn';
+        const mini = donutSVG(notaParaPct(m), corPorNota(m), m.toFixed(1).replace('.', ','));
+        return `<tr>
+          <td>${t.nome}</td>
+          <td>${lista.length}</td>
+          <td style="width:70px;padding:6px 8px;">
+            <div style="transform:scale(.75);transform-origin:left center;">${mini}</div>
+          </td>
+          <td>${freq}%</td>
+          <td><span class="badge ${cor}">${status}</span></td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--cinza-500);">Sem dados.</td></tr>';
+}
+
+/* ============================================================
+   MURAL
+   ============================================================ */
+function novoAviso() {
+  document.getElementById('avisoId').value = '';
+  document.getElementById('tituloFormAviso').textContent = 'Publicar aviso';
+  document.querySelector('#formAviso form').reset();
+  abrirForm('formAviso');
+}
+function editarAviso(id) {
+  const a = DB.get('avisos', id);
+  if (!a) return;
+  document.getElementById('avisoId').value = a.id;
+  document.getElementById('tituloFormAviso').textContent = 'Editar aviso';
+  document.getElementById('avisoTitulo').value = a.titulo;
+  document.getElementById('avisoPublico').value = a.publico;
+  document.getElementById('avisoMensagem').value = a.mensagem;
+  abrirForm('formAviso');
+}
+async function salvarAviso(e) {
+  e.preventDefault();
+  const id = document.getElementById('avisoId').value;
+  const dados = {
+    titulo: document.getElementById('avisoTitulo').value.trim(),
+    publico: document.getElementById('avisoPublico').value,
+    mensagem: document.getElementById('avisoMensagem').value.trim(),
+    autor: user.nome,
+    data: hojeISO()
+  };
+  try {
+    if (id) { await DB.update('avisos', id, dados); toast('Aviso atualizado.'); }
+    else    { await DB.create('avisos', dados);       toast('Aviso publicado.'); }
+    fecharForm('formAviso');
+    renderAvisos(); renderVisao();
+  } catch (err) { toast('Erro ao salvar aviso.', 'erro'); }
+}
+async function excluirAviso(id) {
+  if (!confirm('Excluir este aviso?')) return;
+  await DB.remove('avisos', id);
+  toast('Aviso excluído.');
+  renderAvisos(); renderVisao();
+}
+function renderAvisos() {
+  const avisos = DB.list('avisos').slice().sort((a, b) =>
+    String(b.data || '').localeCompare(String(a.data || ''))
+  );
+  const cont = document.getElementById('listaAvisos');
+  const corBadge = { 'Alunos': 'badge-info', 'Professores': 'badge-warn', 'Pais': 'badge-bad', 'Todos': 'badge-info' };
+  cont.innerHTML = avisos.map(a => `
+    <div class="aviso">
+      <div class="meta">
+        <span class="badge ${corBadge[a.publico] || 'badge-info'}">${a.publico}</span>
+        ${fmtData(a.data)} — ${a.autor || 'Admin'}
+      </div>
+      <h4>${a.titulo}</h4>
+      <p>${a.mensagem}</p>
+      <div style="margin-top:10px;display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="editarAviso('${a.id}')">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirAviso('${a.id}')">Excluir</button>
+      </div>
+    </div>
+  `).join('') || '<div class="placeholder" style="grid-column:1/-1;"><h3>Nenhum aviso</h3><p>Publique um aviso para começar.</p></div>';
+}
+
+/* ============================================================
+   VISÃO GERAL
+   ============================================================ */
+function renderVisao() {
+  const alunos = DB.list('alunos').filter(a => a.status === 'Ativo');
+  const professores = DB.list('professores');
+  const turmas = DB.list('turmas').filter(t => t.status === 'Ativa');
+  const pagamentos = DB.list('pagamentos');
+  const receita = pagamentos.filter(p => p.status === 'Pago').reduce((s, p) => s + Number(p.valor || 0), 0);
+
+  document.getElementById('kpiAlunos').textContent = alunos.length;
+  document.getElementById('kpiProf').textContent = professores.length;
+  document.getElementById('kpiTurmas').textContent = turmas.length;
+  document.getElementById('kpiReceita').textContent = fmtMoeda(receita);
+
+  const pendentes = pagamentos.filter(p => p.status !== 'Pago').slice(0, 5);
+  document.querySelector('#tabPendentesVisao tbody').innerHTML = pendentes.map(p => `
+    <tr><td>${p.aluno}</td><td>${p.plano}</td><td>${fmtMoeda(p.valor)}</td><td>${p.vencimento}</td></tr>
+  `).join('') || '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--cinza-500);">Nenhum pagamento pendente.</td></tr>';
+
+  const avisos = DB.list('avisos').slice().sort((a, b) =>
+    String(b.data || '').localeCompare(String(a.data || ''))
+  ).slice(0, 2);
+  const corBadge = { 'Alunos': 'badge-info', 'Professores': 'badge-warn', 'Pais': 'badge-bad', 'Todos': 'badge-info' };
+  document.getElementById('avisosVisao').innerHTML = avisos.map(a => `
+    <div class="aviso">
+      <div class="meta"><span class="badge ${corBadge[a.publico]}">${a.publico}</span> ${fmtData(a.data)}</div>
+      <h4>${a.titulo}</h4>
+      <p>${a.mensagem}</p>
+    </div>
+  `).join('') || '<p style="font-size:13px;color:var(--cinza-500);">Sem avisos.</p>';
+}
+
+/* ============================================================
+   RENDER GERAL
+   ============================================================ */
+function renderTudo() {
+  renderVisao();
+  renderTurmas();
+  renderProfessores();
+  renderAlunos();
+  renderResponsaveis();
+  renderInscricoes();
+  renderPlanos();
+  renderFinanceiro();
+  renderDesempenho();
+  renderAvisos();
+  popularSelectProfessores();
+  popularSelectTurmas();
+  popularSelectPlanos();
+  popularTurmasBoletim();
+  renderBoletim();
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+(async () => {
+  user = await Auth.require('admin');
+  if (!user) return;
+
+  await DB.sync();
+
+  initTabs({
+    visao:         ['Visão Geral', 'Resumo geral da plataforma'],
+    turmas:        ['Turmas', 'Cadastro e gestão de turmas'],
+    professores:   ['Professores', 'Corpo docente'],
+    alunos:        ['Alunos', 'Alunos matriculados'],
+    responsaveis:  ['Responsáveis', 'Pais e responsáveis'],
+    inscricoes:    ['Inscrições', 'Fichas recebidas'],
+    planos:        ['Planos', 'Planos semanais'],
+    financeiro:    ['Financeiro', 'Pagamentos e carnês'],
+    boletim:       ['Boletim', 'Notas por matéria'],
+    desempenho:    ['Desempenho', 'Indicadores'],
+    mural:         ['Mural de Avisos', 'Comunicação integrada'],
+    perfil:        ['Perfil', 'Seus dados']
+  });
+  preencherUsuarioUI(user);
+  initUploadPerfil();
+
+  document.getElementById('selNivel').addEventListener('change', () => { popularTurmasBoletim(); renderBoletim(); });
+  document.getElementById('selTurmaBol').addEventListener('change', renderBoletim);
+  document.getElementById('selBimBol').addEventListener('change', renderBoletim);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      ['modalCarne','modalCarnesGerais','modalAcesso','modalResultado'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.classList.contains('open')) {
+          el.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      });
+    }
+  });
+
+  renderTudo();
+})();
+</script>
+
+</body>
+</html>
